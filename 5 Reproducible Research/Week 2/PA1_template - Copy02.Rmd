@@ -1,0 +1,150 @@
+Assignment 1
+============
+
+This is an R Markdown document produced to answer the questions formulated by the **Peer Assesment 1**. 
+
+### Loading and preprocessing the data
+```{r echo=TRUE, message = FALSE, results ='asis'}
+library(data.table)
+library(lubridate)
+library(stringr)
+datZero <-  data.table(read.table("activity.csv", skip=1, quote="\"",                                    
+            col.names = c("steps", "date", "interval"),  
+            sep=",", stringsAsFactors = FALSE,  
+            colClasses=c("integer", "character", "integer")))  
+datZero$NewDate <- ymd(datZero$date)
+
+datZero[, `:=` (z1 = str_pad(interval,4,"0", side="left"))]
+datZero[, `:=` (z2 = paste(substr(z1,1,2),":",substr(z1,3,4), sep=""))]
+datZero[, z3:= as.factor(z2)]
+
+datZero <- datZero[, c("steps","NewDate","z3"), with=F]
+setnames(datZero, c("steps","date", "interval"))
+
+
+```
+
+
+### Question 1: What is mean total number of steps taken per day?
+```{r echo=TRUE}
+
+# Ignoring the missing values
+datNotNA <- datZero[!is.na(steps)]
+datNotNA <- datNotNA[, TotalSteps:= sum(steps), by=date]
+
+
+datQ1 <- datNotNA[, c("date", "TotalSteps"), with = F]
+datQ1 <- unique(datQ1, by="date")
+
+summary(datQ1)
+
+meanNotNA <- mean(datQ1$TotalSteps)
+medianNotNA <- median(datQ1$TotalSteps)
+maxNotNA <- max(datQ1$TotalSteps)
+
+hist(datQ1$TotalSteps, main="Total steps by day", col = "red", xlab="Total steps by day", breaks=10, xlim = c(0, 25000) , ylim = c(0, 20))
+abline(v=meanNotNA,col="gold", lwd=4)
+abline(v=medianNotNA,col="blue", lwd=1)
+
+text(medianNotNA,20,label = paste("Median =",medianNotNA), col="blueviolet",adj=c(0,0), cex = 1)
+
+text(meanNotNA,18,label = paste("Mean =",format(meanNotNA, nsmall=3)) , col="yellowgreen",adj=c(0,0), cex = 1)
+
+
+```
+#### The mean of the total number of steps taken by day is `r format(meanNotNA, nsmall=3)` and the median is `r format(medianNotNA, nsmall=0)`.
+
+
+### Question 2: What is the average daily activity pattern?
+```{r echo=TRUE}
+datQ2 <- datNotNA[, AvgSteps:= mean(steps), by=interval]
+datQ2 <- datQ2[,c("interval", "AvgSteps"), with = F]
+datQ2 <- unique(datQ2[order(interval)])
+
+
+with(datQ2, plot(interval, AvgSteps, pch = NA, type="l",
+                ylab="Average",
+                xaxt = "n",  xlab = ""))
+axis(1, las=2, cex=0.8, datQ2$interval);
+lines(datQ2$interval, datQ2$AvgSteps, col = "blue", lwd = 2)
+
+maxNumSteps <- max(datQ2$AvgSteps)
+rowMaxNumSteps <- which.max(datQ2$AvgSteps)
+intervalMaxNumSteps <- datQ2[rowMaxNumSteps][[1]]
+
+```
+
+#### The average daily activate pattern.....
+#### The maximum number of steps is `r maxNumSteps` and it belongs to interval `r intervalMaxNumSteps`.
+
+
+### Question 3: Imputing missing values
+
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+
+```{r echo=TRUE}
+rowsNA <- sum(datZero[, is.na(steps) | is.na(date) | is.na(interval)])
+
+datNA <- datZero[, z:= mean(steps, na.rm=TRUE), by=interval]
+datNA <- datNA[is.na(steps), steps2:= z]
+datNA <- datNA[!is.na(steps), steps2:= steps]
+
+datQ3 <- datNA[, c("steps2", "date", "interval" ), with = FALSE]
+setnames(datQ3, c("steps", "date", "interval"))
+datQ3 <- datQ3[, TotalSteps:= sum(steps), by=date]
+
+datQ3 <- datQ3[, c("date", "TotalSteps"), with = F]
+datQ3 <- unique(datQ3, by="date")
+
+summary(datQ3)
+
+
+hist(datQ3$TotalSteps, main="Total steps by day", col = "red", xlab="Total steps by day", breaks=10, xlim = c(0, 25000) , ylim = c(0, 20))
+
+meanNA <-  mean(datQ3$TotalSteps)
+medianNA <- median(datQ3$TotalSteps)
+```
+
+#### The mean of the total number of steps taken by day is `r format(meanNA, nsmall=0)`.
+#### The median of the total number of steps taken by day is `r format(medianNA, nsmall=0)`.
+#### The impact of imputing missing data on the estimates of the total daily number of steps....
+
+
+### Question 4: Are there differences in activity patterns between weekdays and weekends?
+
+
+```{r echo=TRUE}
+
+datQ4 <- datNA[, c("steps2", "date", "interval" ), with = FALSE]
+setnames(datQ4, c("steps", "date", "interval"))
+datQ4 <- datQ4[, TotalSteps:= sum(steps), by=date]
+
+
+WeekDay <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+WeekEndDay <- c("Saturday", "Sunday")
+
+datWeek <- datQ4[weekdays(datQ3$date) %in% WeekDay]
+datWeekend <- datQ4[weekdays(datQ3$date) %in% WeekEndDay]
+
+datWeek <- datWeek[, meanSteps:= mean(steps), by=interval]
+datWeekend <- datWeekend[, meanSteps:= mean(steps), by=interval]
+
+datWeek <- datWeek[, `:=` (DayType="weekday", colorDay = "blue")]
+datWeekend <- datWeekend[, `:=` (DayType="weekend", colorDay= "red")]
+
+library(lattice)
+datQ4 <- merge(datWeek, datWeekend, by=names(datWeek), all=TRUE)
+datQ4 <- datQ4[order(interval,DayType)]
+with(datQ4, xyplot(meanSteps ~ interval | DayType, layout=c(1,2), type="l", xlab="Interval", ylab = "Average number of steps" , 
+                   col.line=colorDay))
+
+```
+
+#### Differences ....

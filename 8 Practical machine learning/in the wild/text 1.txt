@@ -1,0 +1,46 @@
+	
+
+    library(caret)
+    library(foreach)
+     
+    data <- read.csv("pml-training.csv")
+    data <- data[,-(1:7)]
+    data <- data[,colSums(is.na(data)) == 0]
+    data <- data[,colSums(data == "") == 0]
+     
+    classe <- data$classe
+    data$classe <- NULL
+     
+    intrain <- createDataPartition(classe, p=0.2, list=FALSE)
+     
+    training.x <- data[intrain,]
+    training.y <- classe[intrain]
+     
+    testing.x <- data[-intrain,]
+    testing.y <- classe[-intrain]
+     
+    acc <- function(a, b) {sum(a==b)/length(a)}
+     
+    perfs <- foreach(feature=colnames(data), .combine=rbind) %do% {
+      print(feature)
+      model <- train(x=training.x[feature],
+                     y=training.y,
+                     method="rf",
+                     trControl=trainControl(method="none"),
+                     tuneGrid=expand.grid(mtry=1))
+      training.preds <- predict(model, training.x[feature])
+      testing.preds <- predict(model, testing.x[feature])
+     
+      training.acc <- acc(training.preds, training.y)
+      testing.acc <- acc(testing.preds, testing.y)
+     
+      data.frame(feature=feature, train=training.acc, test=testing.acc)
+    }
+     
+    barplot(perfs$train, names.arg=perfs$feature,
+            main="training set accuracy",
+            las=2, cex.names=0.5)
+    barplot(perfs$test, names.arg=perfs$feature,
+            main="test set accuracy",
+            las=2, cex.names=0.5)
+

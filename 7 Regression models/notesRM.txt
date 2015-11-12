@@ -1,0 +1,8 @@
+The mean of a variable is the coefficient of its regression against the constant, 1.
+ Thus, subtracting the mean is equivalent to replacing a variable by the residual of its
+ regression against 1. In an R formula, the constant regressor can be represented by a 1
+ on the right hand side. Thus, the expression, lm(child ~ 1, galton), regresses child
+ against the constant, 1. Recall that in the galton data, the mean height of a child was
+ 68.09 inches. Use lm(child ~ 1, galton) to compare the resulting coefficient (the
+ intercept) and the mean height of 68.09. Since we want the result to print, don't assign
+ it a name.

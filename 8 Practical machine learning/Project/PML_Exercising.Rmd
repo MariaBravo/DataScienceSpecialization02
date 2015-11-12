@@ -1,0 +1,169 @@
+#### Practical Machine Learning (Coursera)
+
+# Predicting Exercise results
+#### by Maria Bravo
+
+## Introduction
+
+This document presents the methodology and tasks used to fit and predict a measurements dataset [1] in order to fulfill the requirements of the Coursera Practical Machine Learning course assignment.
+
+In the dataset, each observation has been classified with a "classe" variable which has 5 levels: A, B, C, D, E. This work aims to come up with a prediction algorithm to accurately predict each observation class.
+
+
+
+## Analysis
+### Data Preparation
+
+- The data was read from the csv file marking the "NA" and "#DIV/0!#" strings as "Not available" values. Next, the columns with only NA values were excluded.
+
+```{r message=FALSE}
+
+  require(caret)
+  require(randomForest)
+  require(corrplot)
+
+  rawData <- read.table("pml-training.csv", sep=',', header=TRUE, stringsAsFactors = FALSE,
+                      na.strings=c('NA','','#DIV/0!'))
+
+  NAindex <- apply(rawData,2,function(x) {sum(is.na(x))})
+  data <- rawData[,which(NAindex == 0)]
+  data <- data[,-c(1:7)]
+  data$classe <- as.factor(data$classe)
+
+```
+
+- Initially there were `r nrow(rawData)` rows and `r ncol(rawData)` columns in the dataset; after the elimination of NA values, `r ncol(data)` variables remained in the cleaned dataset. 
+
+- The dataset was randomly splitted (by setting seeds) into two subsets training (70%)  and testing (30%).
+
+```{r}
+
+  rm(rawData)
+  set.seed(11230)
+  inTrain = createDataPartition(data$classe, p = 0.7, list=FALSE)
+  training = data[inTrain,]
+  testing = data[-inTrain,]
+  rm(inTrain)
+
+```
+
+`r nrow(training)` rows were assigned at the training subset and `r nrow(testing)` rows to the crossvalidation subset.
+
+- At this step we use the nearZeroVar function to  diagnose predictors that have one unique value or predictors that have both of the following characteristics: 
+  * Very few unique values relative to the number of samples.
+  * The ratio of the frequency of the most common value to the frequency of the second most common value is large.
+
+```{r}
+  trn_nzv <- nearZeroVar(training, saveMetrics=TRUE)
+  training <- training[!trn_nzv$nzv]
+  testing <- testing[!trn_nzv$nzv]
+
+```
+`r length(trn_nzv)` predictors were removed from the training and testing subsets.
+
+- Besides the "classe" variable, we want to work only with numeric values. Therefore, other integer and non-numeric columns will be excluded.
+
+```{r}
+  rm(trn_nzv)
+  trn_numcol <- which(lapply(training,class) %in% c('numeric'))
+  training <- cbind(training["classe"], training[,trn_numcol])
+  testing <- cbind(testing["classe"], testing[,trn_numcol])
+
+```
+`r length(trn_numcol)` numeric predictors were retained.
+
+- Because we want to eliminate redundant variables in order to improve accuracy and readability of the model, we try to remove highly correlated predictors.
+
+```{r}
+  rm(trn_numcol)
+  correlation <- cor(training[2:28])
+  highCorr <- findCorrelation(correlation, cutoff = .95)
+
+ if (length(highCorr) >  0)
+  {
+    training <- training[,-highCorr]
+    testing <- testing[,-highCorr]
+  }
+
+corrplot(correlation, ,order = "hclust",tl.cex = .5)
+```
+
+`r ncol(training)-1` predictors were retained plus the "classe" variable.
+
+
+### Model Training
+
+We evaluated the results of three training methods: decision trees, linear discrimination analysis (LDA) and random forest. Following are the steps involved:
+
+#### Predicting with a classification tree
+```{r, message=FALSE , warning=FALSE}
+    rm(correlation)
+    rm(highCorr)
+    treeModel <- train(classe ~ . , method = "rpart", data=training)
+    print(treeModel)
+```
+
+#### Predicting with LDA
+```{r, message=FALSE , warning=FALSE}
+    ldaModel <- train(classe ~ . , method = "lda", data=training)
+    print(ldaModel)
+```
+
+#### Predicting with random forest.
+```{r}
+  rfModel <- randomForest(classe ~ ., training)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+  print(rfModel)
+```
+
+
+## Model Accuracy: Out-of-sample error
+
+The different models accuracy will be measured using the testing subset
+
+#### Evaluating the classification tree model
+```{r, message=FALSE , warning=FALSE}
+    prediction <- predict(treeModel, testing)
+    print(confusionMatrix(prediction, testing$classe))
+```
+
+#### Evaluating the LDA model
+```{r, message=FALSE , warning=FALSE}
+    prediction <- predict(ldaModel, testing)
+    print(confusionMatrix(prediction, testing$classe))
+```
+
+#### Evaluating the random forest model
+```{r}
+    prediction <- predict(rfModel, testing)
+    print(confusionMatrix(prediction, testing$classe))
+```
+         
+The accuracy of prediction calculated using random forest was 99.5%. 
+
+```{r}
+    testing$predRight <- prediction==testing$classe
+    table(prediction, testing$predRight)
+```          
+
+Given that random forest was the most promising out of all the models tested on the validation set, it was chosen to model the blind set of 20 observations.
+
+
+# Blind set prediction
+
+In this step, we apply the trained model on the blind data.
+
+```{r}
+  rm(prediction)
+  rm(treeModel)
+  rm(ldaModel)
+  goalData <- read.csv("pml-testing.csv", header=TRUE)
+  answers <- predict(rfModel, goalData)
+  answers
+```
+
+## Conclusions
+
+We used random forest for the prediction of the way to perform the barbell lifts in the dataset. The Out-of-sample accuracy was 99.5%. Submitting the scores to the grading system confirmed our expectation of a perfect score 20/20. Note that after each code chunk, obsolete objects have been removed in order to liberate memory.
+
+
+[1] H.Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012.

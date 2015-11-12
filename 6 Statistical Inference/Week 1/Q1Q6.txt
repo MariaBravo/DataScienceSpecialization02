@@ -1,0 +1,13 @@
+Q6
+
+If a random variable, X, is so that E[X]=µ  and Var(X)=s2   what is the mean and variance of Z=X-µs?
+
+Hi, you need to know the properties of the mean function and variance function.
+
+For this particular question, you need these following properties
+
+1) E[ax]=aE[x] if a is a constant 
+2) E[x-a]=E[x]-a if a is a constant 
+3) Var(ax)=a2*Var(x) if a is a constant 
+4) Var(x-a)=Var(x) if a is a constant 
+

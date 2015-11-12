@@ -1,0 +1,183 @@
+# Automatic Detection of Proper Exercise Form Through Machine Learning
+
+## Data Preprocessing
+Data was read in from the csv file and then the initial column (row numbers) was removed. All attributes with large numbers of missing values were excluded from further consideration. 409 rows containing aggreagate calculations were retained. "#DIV/0!#" values and missing values were replaced with 0.Ninety percent of the data was used for training a random forest model and ten percent was reserved for cross-validation.
+```{r warning=FALSE}
+library(randomForest)
+pml <- read.csv("pml-training.csv")
+p <- pml[,-1]
+p <- p[ , c(10, 11, 14, 16:38, 48:57, 65:82, 85:89, 92, 93, 101, 112:148, 156:159)]
+q <- p[(!is.na(p[,3])), ] #remove observations consisting mainly of missing data
+q <- as.matrix(q)
+q[q == "#DIV/0!"] <- NA
+q[q == ""] <- NA
+q[is.na(q)] <- 0
+q <- as.data.frame(q)
+
+set.seed(28)
+index <- 1:nrow(q)
+trainindex <- sample(index, trunc(length(index)*0.9)) #sample is "built-in" making the code more portable.
+trainset <- q[trainindex, ]
+testset <- q[-trainindex, ]
+
+trainset$total_accel_belt <- as.numeric(as.character(trainset$total_accel_belt))
+trainset$max_picth_arm <- as.numeric(as.character(trainset$max_picth_arm))
+trainset$max_yaw_arm <- as.numeric(as.character(trainset$max_yaw_arm))
+trainset$max_picth_arm <- as.numeric(as.character(trainset$max_picth_belt))
+trainset$amplitude_roll_belt <- as.numeric(as.character(trainset$amplitude_roll_belt))
+trainset$max_roll_forearm <- as.numeric(as.character(trainset$max_roll_forearm))
+trainset$max_picth_forearm <- as.numeric(as.character(trainset$max_picth_forearm))
+trainset$max_roll_belt <- as.numeric(as.character(trainset$max_roll_belt))
+trainset$max_roll_arm <- as.numeric(as.character(trainset$max_roll_arm))
+trainset$avg_roll_belt <- as.numeric(as.character(trainset$avg_roll_belt))
+trainset$var_accel_arm <- as.numeric(as.character(trainset$var_accel_arm))
+trainset$total_accel_dumbbell <- as.numeric(as.character(trainset$total_accel_dumbbell))
+trainset$magnet_forearm_x <- as.numeric(as.character(trainset$magnet_forearm_x))
+trainset$magnet_forearm_y <- as.numeric(as.character(trainset$magnet_forearm_y))
+trainset$magnet_forearm_z <- as.numeric(as.character(trainset$magnet_forearm_z))
+trainset$var_roll_belt <- as.numeric(as.character(trainset$var_roll_belt))
+trainset$var_total_accel_belt <- as.numeric(as.character(trainset$var_total_accel_belt))
+trainset$gyros_belt_x <- as.numeric(as.character(trainset$gyros_belt_x))
+trainset$gyros_belt_y <- as.numeric(as.character(trainset$gyros_belt_y))
+trainset$gyros_belt_z <- as.numeric(as.character(trainset$gyros_belt_z))
+trainset$magnet_dumbbell_x <- as.numeric(as.character(trainset$magnet_dumbbell_x))
+trainset$magnet_dumbbell_y <- as.numeric(as.character(trainset$magnet_dumbbell_y))
+trainset$magnet_dumbbell_z <- as.numeric(as.character(trainset$magnet_dumbbell_z))
+trainset$magnet_arm_x <- as.numeric(as.character(trainset$magnet_arm_x))
+trainset$magnet_arm_y <- as.numeric(as.character(trainset$magnet_arm_y))
+trainset$magnet_arm_z <- as.numeric(as.character(trainset$magnet_arm_z))
+trainset$max_picth_dumbbell <- as.numeric(as.character(trainset$max_picth_dumbbell))
+trainset$max_picth_belt <- as.numeric(as.character(trainset$max_picth_belt))
+trainset$skewness_yaw_belt <- as.numeric(as.character(trainset$skewness_yaw_belt)) #skewness_yaw_belt has no effect and will be removed from the final model.
+
+testset$total_accel_belt <- as.numeric(as.character(testset$total_accel_belt))
+testset$max_picth_arm <- as.numeric(as.character(testset$max_picth_arm))
+testset$max_yaw_arm <- as.numeric(as.character(testset$max_yaw_arm))
+testset$max_picth_arm <- as.numeric(as.character(testset$max_picth_belt))
+testset$amplitude_roll_belt <- as.numeric(as.character(testset$amplitude_roll_belt))
+testset$max_roll_forearm <- as.numeric(as.character(testset$max_roll_forearm))
+testset$max_picth_forearm <- as.numeric(as.character(testset$max_picth_forearm))
+testset$max_roll_belt <- as.numeric(as.character(testset$max_roll_belt))
+testset$max_roll_arm <- as.numeric(as.character(testset$max_roll_arm))
+testset$avg_roll_belt <- as.numeric(as.character(testset$avg_roll_belt))
+testset$var_accel_arm <- as.numeric(as.character(testset$var_accel_arm))
+testset$total_accel_dumbbell <- as.numeric(as.character(testset$total_accel_dumbbell))
+testset$magnet_forearm_x <- as.numeric(as.character(testset$magnet_forearm_x))
+testset$magnet_forearm_y <- as.numeric(as.character(testset$magnet_forearm_y))
+testset$magnet_forearm_z <- as.numeric(as.character(testset$magnet_forearm_z))
+testset$var_roll_belt <- as.numeric(as.character(testset$var_roll_belt))
+testset$var_total_accel_belt <- as.numeric(as.character(testset$var_total_accel_belt))
+testset$gyros_belt_x <- as.numeric(as.character(testset$gyros_belt_x))
+testset$gyros_belt_y <- as.numeric(as.character(testset$gyros_belt_y))
+testset$gyros_belt_z <- as.numeric(as.character(testset$gyros_belt_z))
+testset$magnet_dumbbell_x <- as.numeric(as.character(testset$magnet_dumbbell_x))
+testset$magnet_dumbbell_y <- as.numeric(as.character(testset$magnet_dumbbell_y))
+testset$magnet_dumbbell_z <- as.numeric(as.character(testset$magnet_dumbbell_z))
+testset$magnet_arm_x <- as.numeric(as.character(testset$magnet_arm_x))
+testset$magnet_arm_y <- as.numeric(as.character(testset$magnet_arm_y))
+testset$magnet_arm_z <- as.numeric(as.character(testset$magnet_arm_z))
+testset$max_picth_dumbbell <- as.numeric(as.character(testset$max_picth_dumbbell))
+testset$max_picth_belt <- as.numeric(as.character(testset$max_picth_belt))
+
+
+
+```
+
+## Model Selection
+Random forests were built up in a stepwise fashion from the pool of 158 independent variables. Each of the seventeen variables from (Velloso et al. 2013) that were precalculated in the data set were tested (several attributes could have been calculated from the raw data, these attributes were not added). After excluding all rows with mainly missing values, 409 rows remained. Attributes were only added if they decreased error in the context of currently included attributes. At the end of this process, attributes which had low or zero importawere deleted from the model one-by-one to ensure that each attribute that remained contributed appreciably to the accuracy of the model.
+```{r}
+r <- randomForest(classe ~ total_accel_belt + max_picth_arm + max_yaw_arm + max_picth_belt + amplitude_roll_belt + max_roll_forearm + max_picth_forearm + max_roll_belt + max_roll_arm
++ avg_roll_belt + var_accel_arm + total_accel_dumbbell + magnet_forearm_x + magnet_forearm_y + magnet_forearm_z + var_roll_belt + var_total_accel_belt + gyros_belt_x + gyros_belt_y + gyros_belt_z
++ magnet_arm_x + magnet_arm_y + magnet_arm_z + max_picth_dumbbell + skewness_yaw_belt, ntree=100, importance=TRUE, data=trainset)
+importance(r) #skewness_yaw_belt has no effect and will be removed from the final model.
+```
+Importance calculations indicate that the attribute "skewness_yaw_belt" contributes nothing to the accuracy of the model and will thus be removed.
+```{r}
+r <- randomForest(classe ~ total_accel_belt + max_picth_arm + max_yaw_arm + max_picth_belt + amplitude_roll_belt + max_roll_forearm + max_picth_forearm + max_roll_belt + max_roll_arm
++ avg_roll_belt + var_accel_arm + total_accel_dumbbell + magnet_forearm_x + magnet_forearm_y + magnet_forearm_z + var_roll_belt + var_total_accel_belt + gyros_belt_x + gyros_belt_y + gyros_belt_z
++ magnet_arm_x + magnet_arm_y + magnet_arm_z + max_picth_dumbbell, ntree=100, importance=TRUE, data=trainset)
+importance(r)
+
+```
+
+## Cross-Validation
+The data set was split into 90% for training and 10% for cross-validation using the createPartition function (*vide supra*). In-sample training error was estimated by applying the model to the cross-validation data set.
+```{r}
+pred <- predict(r, testset)
+testset$predRight <- pred == testset$classe
+table(pred, testset$classe)
+```
+
+The error rate on the cross-validation sample was 7.8%. Cross-validation error is calculated by dividing the sum of values off of the main diagonal by the sum of all nubmers both on and off of the diagonal. Cross-validation provides the best available *a priori* estimate of out-of-sample error. Note that the numbers that come out of the automatically generated model will differ from the numbers obtained below (in comments) which are included for the purpose of illustration only.
+```{r}
+#pred A B C D E
+# A 546 18 6 11 6
+# B 4 320 9 1 5
+# C 12 20 321 18 4
+# D 10 8 5 292 2
+# E 0 4 3 6 332
+
+#sum of off-diagonal values (mispredictions): 153
+#total predictions (correct predictions + mispredictions): 1963
+#7.8% = (153 / 1963)
+```
+
+## Test
+The cross-valided model was used to predict twenty unclassified examples. After properly reading in and preprocessing the test data, the model was applied and predictions written to file.
+```{r}
+pred <- predict(r, testset)
+testset$predRight <- pred == testset$classe
+table(pred, testset$classe)
+
+pml_test <- read.csv("pml-testing.csv")
+tst <- pml_test[,-1]
+tst <- as.matrix(tst)
+tst[tst == "#DIV/0!"] <- NA
+tst[tst == ""] <- NA
+tst[is.na(tst)] <- 0
+tst <- as.data.frame(tst)
+
+tst$total_accel_belt <- as.numeric(as.character(tst$total_accel_belt))
+tst$max_picth_arm <- as.numeric(as.character(tst$max_picth_arm))
+tst$max_yaw_arm <- as.numeric(as.character(tst$max_yaw_arm))
+tst$max_picth_arm <- as.numeric(as.character(tst$max_picth_belt))
+tst$amplitude_roll_belt <- as.numeric(as.character(tst$amplitude_roll_belt))
+tst$max_roll_forearm <- as.numeric(as.character(tst$max_roll_forearm))
+tst$max_picth_forearm <- as.numeric(as.character(tst$max_picth_forearm))
+tst$max_roll_belt <- as.numeric(as.character(tst$max_roll_belt))
+tst$max_roll_arm <- as.numeric(as.character(tst$max_roll_arm))
+tst$avg_roll_belt <- as.numeric(as.character(tst$avg_roll_belt))
+tst$var_accel_arm <- as.numeric(as.character(tst$var_accel_arm))
+tst$total_accel_dumbbell <- as.numeric(as.character(tst$total_accel_dumbbell))
+tst$magnet_forearm_x <- as.numeric(as.character(tst$magnet_forearm_x))
+tst$magnet_forearm_y <- as.numeric(as.character(tst$magnet_forearm_y))
+tst$magnet_forearm_z <- as.numeric(as.character(tst$magnet_forearm_z))
+tst$var_roll_belt <- as.numeric(as.character(tst$var_roll_belt))
+tst$var_total_accel_belt <- as.numeric(as.character(tst$var_total_accel_belt))
+tst$gyros_belt_x <- as.numeric(as.character(tst$gyros_belt_x))
+tst$gyros_belt_y <- as.numeric(as.character(tst$gyros_belt_y))
+tst$gyros_belt_z <- as.numeric(as.character(tst$gyros_belt_z))
+tst$magnet_dumbbell_x <- as.numeric(as.character(tst$magnet_dumbbell_x))
+tst$magnet_dumbbell_y <- as.numeric(as.character(tst$magnet_dumbbell_y))
+tst$magnet_dumbbell_z <- as.numeric(as.character(tst$magnet_dumbbell_z))
+tst$magnet_arm_x <- as.numeric(as.character(tst$magnet_arm_x))
+tst$magnet_arm_y <- as.numeric(as.character(tst$magnet_arm_y))
+tst$magnet_arm_z <- as.numeric(as.character(tst$magnet_arm_z))
+tst$max_picth_dumbbell <- as.numeric(as.character(tst$max_picth_dumbbell))
+tst$max_picth_belt <- as.numeric(as.character(tst$max_picth_belt))
+
+pred_tst <- predict(r, tst)
+filename = "answers"
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(pred_tst)
+```
+
+
+##Reference
+1) Velloso E, Bulling A, Gellersen H, Ugulino W and Fuks H.

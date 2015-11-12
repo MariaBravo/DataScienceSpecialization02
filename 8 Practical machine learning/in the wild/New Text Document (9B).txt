@@ -1,0 +1,72 @@
+---
+title: "Practical Machine Learning course project"
+author: "Albert Ferre"
+output: html_document
+---
+
+## Summary
+The goal of the project is to predict the class variable from data catched from devices like Jawbone Up, Nike FuelBand, and Fitbit. To do it I've used a random forest and a PCA with the training data. I've used a cross validation data (20% o training set) too. With the random forest the acuracy has been **0.983** and for the cross-validation set **0.989**. With the prediction submition I've reached only **0.6** (12/20).
+
+## code
+
+Code to improve the processor time
+```{r,cache=TRUE,eval=FALSE}
+library(doParallel)
+rCluster <- makePSOCKcluster(6) # Use 6 cores
+registerDoParallel(rCluster)
+```
+The libraries used
+```{r,eval=FALSE}
+library(caret)
+```
+The code used to download the training data and the test data
+```{r, cache=TRUE,eval=FALSE}
+f <- tempfile()
+urldata<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+download.file(urldata,f)
+trainingData<-read.csv(f)
+urldata<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(urldata,f)
+testData<-read.csv(f)
+```
+The following code deletes the columns with blank and NA values. Then merges the training and test set into a single data frame, thus I case use the PCA for both.
+```{r, cache=TRUE,eval=FALSE}
+classe<-trainingData$classe
+trainingSet<-trainingData[sapply(trainingData, function(trainingData) !any(is.na(trainingData)))]
+trainingSet<-trainingSet[sapply(trainingSet, function(trainingSet) !any(is.factor(trainingSet)))]
+testClasse<-rep("NA",nrow(testData))
+testSet<-testData[names(trainingSet)]
+trainingSet<-cbind(classe,trainingSet)
+testSet<-cbind(testClasse,testSet)
+names(testSet)[1]<-"classe"
+trainingSet$toS<-"training"
+testSet$toS<-"test"
+set<-rbind(trainingSet,testSet)
+```
+
+Now, using the PCA, I create a new data frame the principal components explaining the 95% of variation. After that I separate the test from the training set
+```{r, cache=TRUE,eval=FALSE}
+preproc <- preProcess(set[c(-1,-58)], method='pca', thresh=0.95)
+set.pca <- predict(preproc, set[c(-1,-58)])
+set.pca$toS<-set$toS
+train.pca<-set.pca[set$toS=="training",]
+test.pca<-set.pca[set$toS=="test",]
+train.pca<-train.pca[-length(train.pca)]
+test.pca<-test.pca[-length(test.pca)]
+train.pca$classe<-classe
+```
+Now, I only need to create te cross-validation set and fit the random forest model
+```{r, cache=TRUE,eval=FALSE}
+set.seed(23541)
+trainIndex <- createDataPartition(y = train.pca$classe, p=0.6,list=FALSE)
+trainReduced <- train.pca[trainIndex,]
+crossValidation<-train.pca[-trainIndex,]
+modelFit <- train(classe ~ ., data=trainReduced, method='rf')
+```
+Finally, I can check the accuracy of the model, the accuracy with the crossvalidation set and I can meke the predictions for the test set
+```{r, cache=TRUE,eval=FALSE}
+modelFit
+crossPrediction<-predict(modelFit,crossValidation)
+confusionMatrix(crossPrediction,crossValidation$classe)
+predict(modelFit,test.pca)
+```

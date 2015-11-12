@@ -1,0 +1,210 @@
+# Regression Models (Peer Assessment)  
+**Data Science -> Regression Models -> Peer Assessment**   
+  
+
+### Executive Summary
+The purpose of the project is studying the `mtcars` dataset and answer questions about the relationship between fuel efficiency (measured as MPG) and Transmission Type (Automatic vs. Manual). Two main questions should be answered: the first one about which is the better transmission type for MPG, and the second one a quantification of the MPG difference between Automatic and Manual transmissions.  
+
+From the analysis we can conclude that, at 95% confidence level, there is evidence Manual gearboxes are better for MPG, and also that they provide the driver 3.3 to 11.2 additional miles per each gallon consumed in comparison with automatic gearboxes.  
+
+Let me now explain these findings in more detail. 
+
+> A quick note on reproducibility. This report was made using R Markdown and the presented results should be fully reproducible. The following software environment was used: Linux x86_64 (3.15.9-pclos1) / R: 3.1.1 / RStudio: 0.98.481 / R packages: 'datasets' (3.1.1) and 'knitr' (1.6).  
+
+-------------------
+### Setup and data loading and preprocessing  
+
+We will start by loading the `mtcars` dataset into R and by manipulating some of the variables: renaming them and factorize some of them.   
+This data has 11 variables and 32 records. This data was also used to produce Fig.1 plot.
+
+```{r Setup&Loading, echo=FALSE}
+# Setup
+require(datasets)
+require(knitr)
+opts_chunk$set(echo=FALSE, results="markup")
+opts_knit$set(verbose=TRUE)
+
+print(dim(mtcars))
+
+data <- mtcars[, c("mpg", "am", "gear", "disp", "wt")]
+names(data) <- c("MPG", "Type", "NrGears", "Displacement", "Weight")
+data$Type <- factor(data$Type, labels=c("Automatic", "Manual"))
+data$NrGears <- factor(data$NrGears, labels=c("3-speed", "4-speed", "5-speed"))
+
+summary(data, digits=2)
+```
+
+From the original data set we'll keep only the variables relevant for the questions we need to answer: MPG, Transmission Type (used in all models), Number of Gears (used from model 2) and Displacement and Weight (used for the third model).
+From the 32 different car models, 19 have automatic transmission and 13 manual transmission. We can also find that almost half the cars have 3-speeds (15),  followed by 12 with 4-speeds transmissions and only 5 models with 5-speeds transmissions. Displacement ranges from about 71 cubic inches to more than 470 (about 1200cc to 7700cc, wow!), weight is between 1510 and 5420 pounds (approx. 680 to 2460KG).  
+From Fig.2, we can see the distribution of MPG against the Transmission Type, and also against the Number of Gears. At first sight it looks Automatic Transmissions are worse for MPG, i.e., cars with Automatic gears have lower MPG. Lets try to find this out.  
+
+-------------------
+### Data Modeling
+
+I'll start by a simple regression model, using MPG as dependent variable and Transmission Type as independent variable. For easier interpretation, no intercept will be allowed in this first model. 
+
+```{r FittingLM_1}
+
+fit1 <- lm(MPG~ Type - 1, data)
+
+summary(fit1)$call
+coef <- summary(fit1)$coefficients
+print(coef)
+```
+
+We got two coefficients (one for each of the levels present on the factor variable): _TypeAutomatic_ and _TypeManual_. Both of them have high t-values and low p-values, so, they seem to be significant. 
+TypeAutomatic has a coefficient of `r fit1$coefficients[1]` and TypeManual has a coefficient of `r fit1$coefficients[2]`. These coefficients are the predicted MPG for each type of transmission and are equal to the mean of the MPG observed in each transmission type.  
+
+<br>
+```{r IsItBetter}
+ci1 <- coef[1, 1] + c(-1 , 1) * qt(0.975, df=fit1$df) * coef[1, 2]
+ci2 <- coef[2, 1] + c(-1 , 1) * qt(0.975, df=fit1$df) * coef[2, 2]
+
+cat("Confidence Interval @ 95%\n", "TypeAutomatic: [", ci1, "]\n TypeManual:    [", ci2, "]")
+```
+
+It is also possible to create a confidence interval for the coefficients estimated above. At a 95% confidence level, we can see that both intervals do not overlap so there's some evidence that **Automatic Transmissions are worse for MPG**, since the higher end of its MPG range of `r ci1[2]` is still lower than manual transmission MPG's lower end of `r ci2[1]`.  
+We can also estimate the difference between MPG for both types of transmission.  
+
+```{r DifferenceInMPG}
+nA <- nrow(data[data$Type=="Automatic", ])
+sA <- sd(data[data$Type=="Automatic", "MPG"])
+nM <- nrow(data[data$Type=="Manual", ])
+sM <- sd(data[data$Type=="Manual", "MPG"])
+
+diff <- coef[2, 1] - coef[1, 1]
+ci3 <- diff + c(-1 , 1) * qt(0.975, df=nA+nM-2) * (((sA^2)/nA)+(sM^2)/nM)^0.5
+
+cat("Confidence Interval @ 95%\n", "TypeManual - TypeAutomatic: [", ci3, "]\n")
+```
+
+From these results and since, with a 95% confidence level, both ends of the range are positive we can reinforce the previous finding about manual transmissions being better for MPG. Accordingly to the data, **Manual Tansmissions offer better mileage between `r ci3[1]` and `r ci3[2]` for each gallon of fuel**.  
+
+
+Some 'quality control' analysis will now be preformed on the model. The objective of this analysis is evaluate the possible influence of some outliers in the data and also the residuals quality. The line below shows the top 5 of most influential cars for 1st model fitting, measured by `dffits` diagnostic measure.
+
+``` {r ResidualsAndOutlier}
+dff <- order(abs(dffits(fit1)), decreasing=TRUE)
+head(dffits(fit1)[dff], 5)
+```
+
+We can also look at the Fig.3, showing the residuals of each point plotted against the predicted value for that point. This figure has 3 charts, the first one for this first model, and the remaining two for each of the models described below. We can also see no pattern is apparent on the residuals for this model, which is a good signal and is desirable. 
+Fig.4 shows a Q-Q plot of standardized residuals against their theoretical value. We can see that most of the points are close to the diagonal, suggesting residuals are normally distributed.  
+```{r Normality}
+sh <- shapiro.test(fit1$residuals)
+cat(sh$method, "- p.value: ", sh$p.value)
+```
+In fact, a Shapiro-Wilk test returns a p-value of `r sh$p.value`, suggesting the residuals follow a normal distribution.
+Both measures seem get worse in the other models, and some tendency to have higher residuals on the tails seems to emerge. This should be further investigated.  
+
+Then, another 2 models were fitted. The first one adding the number of gears to the previous model, the second one adding displacement (which is highly correlated with number of cylinders and horsepower) and weight on top of transmission type and number of gears. These are selected due to their high correlation with the MPG, as per Fig.1.  
+
+```{r FittingLM_2}
+fit2 <- lm(MPG ~ Type + NrGears - 1, data)
+fit3 <- lm(MPG ~ Type + NrGears + Displacement + Weight - 1, data)
+```
+
+Analysis suggests the initial and more simple model has some explanatory capabilities over MPG, but it also shows there is room for improvement by adding more independent variables to the model. Accordingly to the ANOVA table below, both of the inclusions are significant improvements over the initial model.  
+```{r}
+anova(fit1, fit2, fit3)
+```
+
+
+-------------------
+### To Do's
+Some additional steps might be useful:
+- Repeat the study with more recent data;  
+- Repeat the study ignoring 'Mercedes 240D' from the data since it seems to be the unique diesel engine powered car in the sample, and, due to its different technical architecture it is not comparable to the other cars;
+- Use some measures as Power Density (HP/Displacement) as a measure of engine efficiency, or the relationship between engine power and car weight (HP/Weight) as independent variables.
+
+-------------------
+## APPENDIX
+### Exploratory Data
+
+**Fig.1 - All vs. All plot.**  
+Each variable is plotted against each other to help identify some patterns. Plots are displayed in the lower triangle. Correlation is displayed in the upper triangle.      
+```{r AllVsAll, fig.width=12, fig.height=9}
+par(mar=c(2, 2, 0, 0))
+u.panel <- function(x, y, digits=2, ...) {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- cor(x, y)
+    txt <- format(r, digits=digits)
+    text(0.5, 0.5, txt, cex = 3.75*sqrt(abs(r)), col=ifelse(r>0,"darkblue", "red3"))
+}
+pairs(~mpg+cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb, 
+      data=mtcars,
+      gap=0.25, 
+      lower.panel=panel.smooth, 
+      upper.panel=u.panel, 
+      pch=15
+)
+
+```  
+
+
+**Fig.2 - MPG data ploted against transmission type**  
+Information about number of gears is plotted over the chart.  
+```{r MPG_vs_Type+Gears, fig.width=12, fig.height=6}
+
+m0 <- mean(data$MPG)
+m1 <- mean(data[data$Type=="Automatic", "MPG"])
+m2 <- mean(data[data$Type=="Manual", "MPG"])
+
+s3 <- mean(data[data$NrGears=="3-speed", "MPG"])
+s4 <- mean(data[data$NrGears=="4-speed", "MPG"])
+s5 <- mean(data[data$NrGears=="5-speed", "MPG"])
+
+par(mar=c(2, 2, 0, 0), bty="n")
+plot(data$Type, data$MPG, lwd=1.75)
+
+points(data[data$NrGears=="3-speed", "Type"], 
+       data[data$NrGears=="3-speed", "MPG"], 
+       col="red2", 
+       pch=19)
+text(0.50, s3, "< Avg. 3-speed", cex=0.75, col="red2")
+
+points(data[data$NrGears=="4-speed", "Type"], 
+       data[data$NrGears=="4-speed", "MPG"], 
+       col="gold2", 
+       pch=19)
+text(0.50, s4, "< Avg. 4-speed", cex=0.75, col="gold2")
+
+points(data[data$NrGears=="5-speed", "Type"], 
+       data[data$NrGears=="5-speed", "MPG"], 
+       col="navyblue", 
+       pch=19)
+text(0.50, s5, "< Avg. 5-speed", cex=0.75, col="navyblue")
+
+points(1, m1, col="darkgreen", pch=11, cex=1.25)
+lines(c(0, 0.99), c(m1,m1), col="darkgreen", lwd=1.2, lty="dashed")
+text(0.75, m1, "Avg. Automatic", cex = 0.75, adj=c(0.45, 1), col="darkgreen")
+
+points(2, m2, col="darkgreen", pch=11, cex=1.25)
+lines(c(0, 1.99), c(m2,m2), col="darkgreen", lwd=1.2, lty="dashed")
+text(1.75, m2, "Avg. Manual", cex = 0.75, adj=c(0.5, 1), col="darkgreen")
+```
+
+<br>
+### Residuals Analysis
+
+**Fig.3 - Model's Residuals ploted against the Fited Values**  
+From left to right: model 1, model 2 and model 3.  
+```{r Residuals_LM1, fig.width=12, fig.height=7}
+
+par(mfrow=c(1,3), mar=c(4, 4, 0, 1), bty="n")
+plot(fit1, which=1)
+plot(fit2, which=1)
+plot(fit3, which=1)
+```
+
+
+**Fig.4 - Fited Values Quartiles plotted against Theoretical Quartiles**  
+From left to right: model 1, model 2 and model 3.  
+```{r Residuals_LM2, fig.width=12, fig.height=7}
+
+par(mfrow=c(1,3), mar=c(4, 4, 0, 1), bty="n")
+plot(fit1, which=2)
+plot(fit2, which=2)
+plot(fit3, which=2)
+```

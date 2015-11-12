@@ -1,0 +1,246 @@
+The cars dataset
+=====
+
+
+## Executive Summary
+target and methods applied
+
+This study aims to explore the relationship between a set of variables and miles per gallon (MPG) using the mtcars dataset included with the base R package. Our analysis provides an answer to the question of whether an automatic or manual transmission is better for miles per gallon (MPG). 
+
+
+
+
+
+Over the decades, Motor Trend has accumulated an archive of design characteristics and performance measurements of thousands of auto models. We can use these data to estimate the effect of automotive design choices on performance. In this report, I use data ( ) from the 1974 issues of Motor Trend to examine the effect that selection of an
+automatic or manual transmission had on fuel economy in the era immediately following the first major oil crisis. I develop a multiple linear regression model on transmission type and 3 other predictors of fuel economy, having 0.8975, and find that the best predictors are related to weight and power-to-weight ratio, not transmission type. The model indicates that selecting a manual transmission-equipped car improves fuel economy by about 0.7605 mpg, with 95% confidence interval (-1.2913 mpg, 2.8124 mpg)–implying that a fuel-economy decrease cannot be ruled out. The large variance in the estimate is unsuprising because of the relatively large variance of fuel economy observations, the small size of the dataset, and its bias towards unusual, editorially interesting cars.
+
+
+In this article, we will be examining a question that has intrigued many drivers. Is there a difference in miles
+per gallon consumed by a car with respect to the fact that it has a manual or automatic transmission? This
+is the question we will be trying to answer. Our analysis suggests that cars with manual transmission tend to
+be more efficient than cars with manual transmission, but when the weight of a car reaches a threshold of
+somewhere around 3.15 - 3.4 thousand pounds, the advantage seems to be reversed and cars with manual
+transmission become more efficient.
+
+
+This report estimates the impact of transmission type on average fuel economy, using the a dataset of 32 vehicles in the mtcars data package. The analysis identifies a statistically significant association between fuel economy and transmission type, supporting automatic vehicles as possessing greater fuel economy when controlling for the weight of the vehicle and its ¼ mile time.
+
+
+
+Executive summary : In this report, I examine the effect of the type of transmission of a car on its fuel
+consumption efficiency measured in miles per gallon using linear regression modeling. I find that other
+features are more appropriate to explain fuel efficiency especially the weight and the 1/4 mile time. Adding
+the type of transmission to a linear model including those variables does not add significant information.
+In this project I study the database “mtcars” provided in R base.This database contains observations of 11
+features of 32 different cars. It does not contain any NULL value. My goal is to answer the following
+questions : is an automatic or manual transmission (variable “am”) better for Miles Per Gallon (variable
+“mpg”) ? The second part of the project is to quantify how different is the mpg between automatic and
+manual transmission.
+As this project is done for a course about linear regression models, I will use this technique to answer the
+questions. I will proceed as follow : first I will do some explanatory analysis, then I will select the variables
+that explain the variance in mpg in order to control for their effect in my final model, then I will assess the
+effect of transmission on miles per gallon and answer the questions.
+
+
+
+
+This analysis is presented in the context of someone working for Motor Trend Magazine assigned to a data analysis project. Of interest to the analyst are the variables that help explain the relationship between drive train (automatic or manual) and miles per gallon (MPG). Specifically, two research questions were presented to frame the analysis:
+Is an automatic or manual transmission better for MPG?
+How different is the MPG between automatic and manual transmissions?
+The research questions are addressed first by exploratory data analysis to become familiar with the variables and then statistical modeling to develop a regressionmodel using step-wise regression. The Results section interprets the coefficients and provides two findings: a) manual transmissions provide better MPG; and b) with 95% confidence, a manual transmission is estimated to result in a 0.05 to 5.82 MPG increase (statistically significant difference at 0.05%). Further investigation determined the model was well constructed by using residuals and diagnostics.
+
+
+The purpose of this project is to explore the relationship between a set of variables and miles per gallon (MPG). Specifically, we
+want to answer the following two questions:
+1. Is an automatic or manual transmission better for MPG“?
+2. How different is the MPG between automatic and manual transmissions?
+This study shows that the answer depends on the car’s weight (wt) and the 1/4 mile time (qsec), a performance benchmark for car
+acceleration. For light weighted cars, manual tranmission is better for MPG. However, for heavier cars, automatic transmission is
+better for MPG. For a given qsec, manual transmission is always better for MPG. For the range of data considered in this study, the
+difference in MPG between autmoatic and manual transmission is between -7 and 7.
+
+
+We analyze the mtcars data set in order to answer the question of whether an automatic or manual transmission is better for miles per gallon (MPG), and to quantify the difference. Our exploratory analysis shows that transmission type is correlated with characteristics such as weight and horsepower.
+We fit a variety of linear models to adjust for the confounding factors and estimate the effect of transmission. When we adjust for the confounding factors we are unable to estimate the effect of transmission reliably. Specifically, weight is the predictor that is most highly correlated with MPG, and weight is also very highly correlated with transmission type. This means that our data set is not able to tell us what the effect of transmission type is on MPG.
+
+
+
+This study examines the relationship between a set of variables and miles per gallon (MPG) for a collection of cars.
+The main purpose of the investigation was to establish whether automatic or manual transmission is better for MPG, and to quantify the relationship between transmission type and MPG, if it indeed exists. When ignoring other variables, data seemed to suggest that manual transmission is better for MPG. However, basic exploratory analysis revealed that a car's weight and horse power are important confounding variables. Consequently, proper regression analysis that accounted for confounding variables suggested that the difference in MPG by transmission type was not statistically significant (based on 5% confidence level). Therefore, a quantitative relationship between MPG and transmission type could not be established. Several regression models were explored and discussed in the context
+of the analysis.
+
+
+### Data Exploration
+
+The mtcars dataset has 11 variables representing 10 features of a car and  one variable indicating the MPG. There are 32 observations where each row represents an automobile model.
+
+Using the summary command, we observed that there were no
+missing data points. In order to study the correlation between variables and outcome, we produced the scatterplots of each variable against the outcome.
+
+
+```{r}
+data(mtcars)
+summary(mtcars)
+
+par(mfrow=c(3,4))
+with(mtcars,{
+plot(cyl, mpg)
+plot(disp, mpg)
+plot(hp, mpg)
+plot(drat, mpg)
+plot(wt, mpg)
+plot(qsec, mpg)
+plot(vs, mpg)
+plot(am, mpg)
+plot(gear, mpg)
+plot(carb, mpg)
+})
+
+```
+
+
+The plot shows categorical variables (cyl, vs, am, gear, carb) that will be transformed from numeric to factors. We are preserving the original dataset in order to build models on it.
+
+
+```{r}
+
+data1 <- mtcars
+data1$cyl <- factor(data1$cyl)
+data1$vs <- factor(data1$vs)
+data1$am <- factor(data1$am)
+data1$gear <- factor(data1$gear)
+data1$carb <- factor(data1$carb)
+
+
+```
+
+
+Looking at the mpg column of the correlation matrix, qsec has the smallest
+(absolute) correlation ratio, while for cylinder variable it is 0.79, which is
+the highest absolute value. This results does not necessarily mean that qsec variable is not significant but that there another variables producing more impact on the outcome of ‘mpg’ variable.
+
+
+```{r}
+
+s <- cor(mtcars, use="pairwise.complete.obs", method="kendall")
+sort(abs(s[1,2:11]), decreasing = TRUE)
+
+````
+
+
+### Modelling
+
+-models and comments
+-some diagnostics on the models to see if the main assumptions underlying the linear regression are verified
+
+At this stage of our analysis, we will build regression models and examine the marginal impact transmission variable
+
+
+```{r}
+
+null = lm(mpg ~ 1, data = data1);
+full = lm(mpg ~ ., data = data1);
+forward <- step(null, scope=list(lower=null, upper=full), direction="forward");
+backward <- step(full, data=mtcars1, direction="backward");
+stepwise <- step(null, scope = list(upper=full), data= mtcars1, direction="both");
+
+```
+
+
+
+
+## Results
+
+
+## Appendix
+
+
+
+
+
+```{r}
+
+
+s <- cor(mtcars, use="pairwise.complete.obs", method="kendall")
+s[1,2:11]
+sort(s[1,2:11], decreasing = TRUE)
+
+mtcars1 <- mtcars
+mtcars1$disp <- log(mtcars1$disp)
+mtcars1$hp <- log(mtcars1$hp)
+mtcars1$wt <- log(mtcars1$wt)
+
+
+mtcars2 <- mtcars
+mtcars2$disp <- sqrt(mtcars2$disp)
+mtcars2$hp <- sqrt(mtcars2$hp)
+mtcars2$wt <- sqrt(mtcars2$wt)
+
+
+cor(mtcars1$mpg, mtcars1$disp)
+cor(mtcars1$mpg, mtcars1$hp)
+cor(mtcars1$wt, mtcars1$wt)
+
+cor(mtcars2$mpg, mtcars2$disp)
+cor(mtcars2$mpg, mtcars2$hp)
+cor(mtcars2$wt, mtcars2$wt)
+
+
+v <- cor(mtcars1$mpg, mtcars1)
+sort(v)
+
+round(cor(mtcars1[,c(2,3,4,6)]),2)
+
+round(cor(mtcars1, mtcars1[,c(2,3,4,6)]),2)
+
+model1 <- lm( mpg ~ wt , data = mtcars1)
+summary(model1)
+
+model2 <- lm( mpg ~ qsec , data = mtcars1)
+summary(model2)
+
+model3 <- lm( mpg ~ hp , data = mtcars1)
+summary(model3)
+
+model4 <- lm( mpg ~ am , data = mtcars1)
+summary(model4)
+
+modelA <- lm( mpg ~ wt + qsec , data = mtcars1)
+summary(modelA)
+
+modelB <- lm( mpg ~ hp + am , data = mtcars1)
+summary(modelA)
+
+hist(resid(modelA))
+
+hist(resid(modelB))
+
+##***************************************
+
+
+null = lm(mpg ~ 1, data = mtcars);
+full = lm(mpg ~ ., data = mtcars);
+forward <- step(null, scope=list(lower=null, upper=full), direction="forward");
+backward <- step(full, data=mtcars, direction="backward");
+stepwise <- step(null, scope = list(upper=full), data=mtcars, direction="both");
+
+
+null = lm(mpg ~ 1, data = data1);
+full = lm(mpg ~ ., data = data1);
+forward <- step(null, scope=list(lower=null, upper=full), direction="forward");
+backward <- step(full, data=mtcars1, direction="backward");
+stepwise <- step(null, scope = list(upper=full), data= mtcars1, direction="both");
+
+
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
+
+** library(knitr)
+** pandoc('projectCars.md', format = 'latex')

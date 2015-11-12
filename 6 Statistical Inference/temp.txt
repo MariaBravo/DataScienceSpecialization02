@@ -1,0 +1,7 @@
+I tried this test 5th times to have better score. However I still do not understand some of them.
+
+Question 1.  Z(1-alpha) should be used rather than Z(1-alpha/2). I don't know yet why it is. According to lecture note on CLT, the equation for CI is Xn+/-z(1-alpha/2)*sigma/sqrt(n).
+
+Question 5: poisson.test() works, but ppois() doesn't work. why?
+
+Question 9: power.t.test() doesn't work. I have to calculate the n from the equation in the lecture note on power at week 4 page 8. Why are they different??

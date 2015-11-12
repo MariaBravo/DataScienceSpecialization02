@@ -1,0 +1,21 @@
+Explaining p-value
+-        Explaining Chi-squared goodness of fit
+-        Commenting on how to address over-fitting in a regression model 
+
+
+For me, I can sum up the take-home message in the following points:
+
+-        Statistical inference is about drawing conclusions about a population  based on data obtained from a sample of that population (hence, we have to deal with/account for noise/uncertainty)
+-        Accounting for uncertainty implies that any quantity we measure (mean, variance) has to have a range of values (confidence interval)
+-        the confidence interval depends on the sample size (this is intuitive since as sample size increases, we become more certain about the quantity we are measuring)
+-        Confidence intervals come into play when testing hypotheses (again in a very intuitive manner, if the postulated value falls outside the confidence interval then the null hypothesis is rejected)
+-        There are different prescriptions for calculating confidence intervals depending on the sample distribution (normal, binomial, t, Poisson, etc.) and nature of the problem (comparing two populations, paired, one-sided vs two sided, etc.)
+
+
+
+
+
+I think it is only nature that people forget newly learned information. Despite the fact that those lectures can be improved, 4 weeks are not enough for one to learn anything for real.  Real improvement in knowledge only comes with a lot of practice. One way to do it is to find a book and do practice assignments. I remembered one of my stats class, every week, we had assignment which contains one or two data-set (from publications or other sources), we had to analyze it using SAS and write a report on the conclusions. It took hours of work even with a partner. As a result, I still remember stuff from that class until this day. You just need to keep doing it.
+
+
+You can find a lot of datasets, available for free download. Use those, make up your own hypotheses, and run your analysis. For example, you can get census data in most countries and compare education level with income.

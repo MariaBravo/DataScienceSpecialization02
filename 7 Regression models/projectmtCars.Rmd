@@ -1,0 +1,123 @@
+Analysing the mtcars dataset: mpg and transmission
+==================================================
+**Regression Models (Coursera). September 2014**
+
+## Executive Summary
+This study aims to explore the relationship between a set of variables and miles per gallon (mpg) using the mtcars dataset included with the base R package. Our analysis look for an answer to the question of whether an automatic or manual transmission is better for miles per gallon. The regression analysis that accounted for confounding variables found that manual transmissions provide better mpg and, with 95% confidence, a manual transmission is estimated to change mpg by an amount varying from -1.06093 to 4.679356.
+
+
+## Exploratory data analysis
+The mtcars dataset has 11 variables representing 10 features of a car and  one variable indicating the mpg. There are 32 observations where each row represents an automobile model. Using the summary command, we observed that there were no missing data points. In order to study the correlation between variables and outcome, we produced the scatterplots of each variable against the outcome. The plot in Figure 1 shows categorical variables (cyl, vs, am, gear, carb) that will be transformed from numeric to factors. We are preserving the original dataset in order to build models on it.
+
+```{r echo=FALSE, eval=FALSE }
+data(mtcars)
+summary(mtcars)
+```
+
+```{r echo=FALSE}
+dataT <- mtcars
+dataT$cyl <- factor(dataT$cyl)
+dataT$vs <- factor(dataT$vs)
+dataT$am <- factor(dataT$am)
+dataT$gear <- factor(dataT$gear)
+dataT$carb <- factor(dataT$carb)
+```
+
+Looking at the mpg column of the correlation matrix, qsec has the smallest (absolute) correlation ratio, while the cylinder variable obtains 0.79, which is the highest absolute value. This result does not necessarily mean that qsec variable is not significant but that there another variables producing more impact on the outcome of the variable mpg.
+
+```{r echo = TRUE, eval=TRUE}
+s <- cor(mtcars, use="pairwise.complete.obs", method="kendall")
+sort(abs(s[1,2:11]), decreasing = TRUE)
+````
+
+## Modelling
+At this stage of our analysis, we build regression models and examine the marginal impact of the transmission variable, using the R function step() in order to perform variable selection. The results of backward-elimination and forward-selection strategies are compared based on the AIC (Akaike's An Information Criterion). At the end of this process, all strategies deliver the same last model (mpg ~ wt + cyl + hp + am) with an AIC = 61.65. 
+
+```{r echo=TRUE, eval=TRUE, results='asis' }
+null = lm(mpg ~ 1, data = dataT);
+full = lm(mpg ~ ., data = dataT);
+forward <- step(null, scope=list(lower=null, upper=full), 
+                direction="forward", trace=FALSE);
+backward <- step(full, data=dataT, direction="backward", trace=FALSE);
+stepwise <- step(null, scope = list(upper=full), data= dataT, 
+                 direction="both", trace=FALSE);
+```
+
+```{r echo=FALSE, eval=TRUE}
+summary(stepwise)
+```
+
+We apply the same approach to the original dataset (without the factor transformation). The smallest AIC is 62.66 and the best model is mpg ~ wt + qsec + am (using backward-elimination).
+
+```{r echo=FALSE, eval=FALSE}
+null = lm(mpg ~ 1, data = mtcars);
+full = lm(mpg ~ ., data = mtcars);
+forward <- step(null, scope=list(lower=null, upper=full), 
+                direction="forward");
+backward <- step(full, data=mtcars, direction="backward");
+stepwise <- step(null, scope = list(upper=full), data= mtcars, 
+                 direction="both");
+```
+
+The model based on the original dataset has an Adjusted R-squared = 0.8336  while the transformed dataset provides a model with Adjusted R-squared = 0.8401. Therefore, using the Adjusted R-squared and AIC criteria, we select the model based on the modified dataset as the final model.
+
+```{r echo=FALSE, eval=TRUE}
+modelOrig <- lm( mpg ~ wt + qsec + am, data = mtcars )
+modelTransf <- lm( mpg ~ wt + cyl + hp + am, data = dataT )
+resOrigin <- summary(modelOrig)
+resTransf <- summary(modelTransf)
+```
+
+However, before reporting the model results, we must verify that the model conditions are reasonable by checking the following assumptions using graphs presented at the Appendix: the residuals of the model are nearly normal (Figure 2), the variability of the residuals is nearly constant (Figure 3) and each variable is linearly related to the outcome (Figure 4).
+
+## Conclusions
+
+According to the final model coefficients for the am predictor variable, we estimate a 1.8092 increase in mpg if the vehicle has a manual transmission (versus the reference of an automatic transmission).
+
+Therefore, answering the first question "Is an automatic or manual transmission better for mpg?", the final model coefficient for the predictor am is 1.8092 where the label indicates the variable equals "manual". In other words, when making a comparison to the reference level ("automatic"), the positive value of the coefficient shows that a manual transmission was better for mpg.
+
+About the second question "Quantify the mpg difference between automatic and manual transmissions", 
+switching from automatic transmission to manual transmission while holding horse power, weight and cylinders constant, changes mpg by an amount from -1.06093 to 4.679356 with 95% confidence.
+
+```{r echo=TRUE, eval=TRUE}
+confint(modelTransf,level = 0.95)
+```
+
+
+## Appendix
+
+```{r echo = FALSE , fig.cap = "Correlation mpg ~ .", fig.width=7, fig.height=6, fig.pos='H'}
+
+par(mfrow=c(3,4))
+with(mtcars,{ plot(cyl, mpg); plot(disp, mpg); plot(hp, mpg);
+            plot(drat, mpg);plot(wt, mpg);plot(qsec, mpg);
+            plot(vs, mpg);plot(am, mpg);plot(gear, mpg);
+            plot(carb, mpg)})
+
+```
+
+```{r echo = FALSE , fig.cap = "Normal Probability plot", fig.width=3, fig.height=3,  fig.pos='H'}
+par(mfrow=c(1,1))
+modelTransf.res <- rstandard(modelTransf)
+qqnorm(modelTransf.res)
+qqline(modelTransf.res)
+```
+
+```{r echo = FALSE , fig.cap = "Absolute values of residuals against fitted values", fig.width=3, fig.height=3, fig.show='asis'}
+
+plot( modelTransf$fitted.values, abs(modelTransf$residuals))
+```
+
+```{r echo = FALSE , fig.cap = "Residuals against wt and cyl", fig.width=7, fig.height=3, fig.show='asis'}
+par(mfrow=c(1,2))
+
+plot( modelTransf$model$wt, modelTransf$residuals)
+plot( modelTransf$model$cyl, modelTransf$residuals)
+```
+
+```{r echo = FALSE , fig.cap = "Residuals against hp and am", fig.width=7, fig.height=3, fig.show='asis'}
+par(mfrow=c(1,2))
+plot( modelTransf$model$hp, modelTransf$residuals)
+plot( modelTransf$model$am, modelTransf$residuals)
+```
+

@@ -1,0 +1,85 @@
+---
+title: "Project1"
+author: "J. Sieber"
+date: "Thursday, June 19, 2014"
+output: pdf_document
+---
+
+##Objective
+Create a model to predict activities of people using fitness tracker raw information.
+
+##Model Fit
+Load libraries:
+```{r echo=TRUE}
+library(caret)
+library(randomForest)
+```
+
+Read in data from working directory. Create a test set, a final train set, cross validation test set, cross validation train set. I used a 70/30 split on the training set to generate the cross validation sets.
+```{r echo=TRUE}
+test<-read.csv("pml-testing.csv")
+train<-read.csv("pml-training.csv")
+set.seed(1)
+cv<-sample(train$X,size=13735,replace=FALSE)
+cvtrain<-train[cv,]
+cvtest<-train[-cv,]
+```
+
+Set seed so data is reproducable. Set the seed everywhere a random operation occurs.
+```{r, echo=TRUE}
+set.seed(1)
+```
+
+Fit a model using the raw training data. I used a random forest to make my model. I tried using train(,model="rf") but it was very slow. randomForest() was very quick.
+```{r, echo=TRUE}
+fit<-randomForest(classe~user_name+roll_belt+pitch_belt+
+               yaw_belt+gyros_belt_x+gyros_belt_y+gyros_belt_z+accel_belt_x+
+               accel_belt_y+accel_belt_z+magnet_belt_x+magnet_belt_y+
+               magnet_belt_z+roll_arm+pitch_arm+yaw_arm+total_accel_arm+
+                   gyros_arm_x+gyros_arm_y+gyros_arm_z+accel_arm_x+accel_arm_y+
+                   accel_arm_z+magnet_arm_x+magnet_arm_y+magnet_arm_z,
+               importance=TRUE,
+           method="rf",data=cvtrain,ntree=50)
+```
+
+##Cross Validation
+Show features that were important to the model.
+```{r, echo=TRUE}
+varImpPlot(fit)
+```
+
+Make a prediction on the cross validation test set to get an idea how the model did.
+```{r, echo=TRUE}
+pred<-predict(fit,cvtest)
+confusionMatrix(pred,cvtest$classe)
+```
+
+The model seemed to fit well on the cross validation test set. I then used the full train data to create a new fit. The fit on the model with the full training set will be better then the cross validation training set.
+```{r, echo=TRUE}
+set.seed(1)
+fit<-randomForest(classe~user_name+roll_belt+pitch_belt+
+               yaw_belt+gyros_belt_x+gyros_belt_y+gyros_belt_z+accel_belt_x+
+               accel_belt_y+accel_belt_z+magnet_belt_x+magnet_belt_y+
+               magnet_belt_z+roll_arm+pitch_arm+yaw_arm+total_accel_arm+
+                   gyros_arm_x+gyros_arm_y+gyros_arm_z+accel_arm_x+accel_arm_y+
+                   accel_arm_z+magnet_arm_x+magnet_arm_y+magnet_arm_z,
+               importance=TRUE,
+           method="rf",data=train,ntree=50)
+```
+
+I then used the new fit to make the predictions on the test set.
+```{r, echo=TRUE}
+pred<-predict(fit,test)
+pred
+```
+
+I used the supplied function to generate the text files needed for submission.
+```{r, echo=TRUE}
+write_files = function(x){
+    n = length(x)
+    for(i in 1:n){
+        filename = paste0("problem_id_",i,".txt")
+        write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    }
+}
+```

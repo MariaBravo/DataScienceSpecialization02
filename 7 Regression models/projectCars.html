@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title>The cars dataset</title>
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 8px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre {	
+   margin-top: 0;
+   max-width: 95%;
+   border: 1px solid #ccc;
+   white-space: pre-wrap;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code.r, code.cpp {
+   background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+
+</style>
+
+<!-- Styles for R syntax highlighter -->
+<style type="text/css">
+   pre .operator,
+   pre .paren {
+     color: rgb(104, 118, 135)
+   }
+
+   pre .literal {
+     color: rgb(88, 72, 246)
+   }
+
+   pre .number {
+     color: rgb(0, 0, 205);
+   }
+
+   pre .comment {
+     color: rgb(76, 136, 107);
+   }
+
+   pre .keyword {
+     color: rgb(0, 0, 255);
+   }
+
+   pre .identifier {
+     color: rgb(0, 0, 0);
+   }
+
+   pre .string {
+     color: rgb(3, 106, 7);
+   }
+</style>
+
+<!-- R syntax highlighter -->
+<script type="text/javascript">
+var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</head>
+
+<body>
+<h1>The cars dataset</h1>
+
+<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring web pages (click the <strong>Help</strong> toolbar button for more details on using R Markdown).</p>
+
+<p>When you click the <strong>Knit HTML</strong> button a web page will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+
+<h2>Executive Summary</h2>
+
+<p>target and methods applied</p>
+
+<p>This study aims to explore the relationship between a set of variables and miles per gallon (MPG) using the mtcars dataset included with the base R package. Our analysis provides an answer to the question of whether an automatic or manual transmission is better for miles per gallon (MPG). </p>
+
+<p>Over the decades, Motor Trend has accumulated an archive of design characteristics and performance measurements of thousands of auto models. We can use these data to estimate the effect of automotive design choices on performance. In this report, I use data ( ) from the 1974 issues of Motor Trend to examine the effect that selection of an
+automatic or manual transmission had on fuel economy in the era immediately following the first major oil crisis. I develop a multiple linear regression model on transmission type and 3 other predictors of fuel economy, having 0.8975, and find that the best predictors are related to weight and power-to-weight ratio, not transmission type. The model indicates that selecting a manual transmission-equipped car improves fuel economy by about 0.7605 mpg, with 95% confidence interval (-1.2913 mpg, 2.8124 mpg)implying that a fuel-economy decrease cannot be ruled out. The large variance in the estimate is unsuprising because of the relatively large variance of fuel economy observations, the small size of the dataset, and its bias towards unusual, editorially interesting cars.</p>
+
+<p>In this article, we will be examining a question that has intrigued many drivers. Is there a difference in miles
+per gallon consumed by a car with respect to the fact that it has a manual or automatic transmission? This
+is the question we will be trying to answer. Our analysis suggests that cars with manual transmission tend to
+be more efficient than cars with manual transmission, but when the weight of a car reaches a threshold of
+somewhere around 3.15 - 3.4 thousand pounds, the advantage seems to be reversed and cars with manual
+transmission become more efficient.</p>
+
+<p>This report estimates the impact of transmission type on average fuel economy, using the a dataset of 32 vehicles in the mtcars data package. The analysis identifies a statistically significant association between fuel economy and transmission type, supporting automatic vehicles as possessing greater fuel economy when controlling for the weight of the vehicle and its ¼ mile time.</p>
+
+<p>Executive summary : In this report, I examine the effect of the type of transmission of a car on its fuel
+consumption efficiency measured in miles per gallon using linear regression modeling. I find that other
+features are more appropriate to explain fuel efficiency especially the weight and the &frac14; mile time. Adding
+the type of transmission to a linear model including those variables does not add significant information.
+In this project I study the database mtcars provided in R base.This database contains observations of 11
+features of 32 different cars. It does not contain any NULL value. My goal is to answer the following
+questions : is an automatic or manual transmission (variable am) better for Miles Per Gallon (variable
+mpg) ? The second part of the project is to quantify how different is the mpg between automatic and
+manual transmission.
+As this project is done for a course about linear regression models, I will use this technique to answer the
+questions. I will proceed as follow : first I will do some explanatory analysis, then I will select the variables
+that explain the variance in mpg in order to control for their effect in my final model, then I will assess the
+effect of transmission on miles per gallon and answer the questions.</p>
+
+<p>This analysis is presented in the context of someone working for Motor Trend Magazine assigned to a data analysis project. Of interest to the analyst are the variables that help explain the relationship between drive train (automatic or manual) and miles per gallon (MPG). Specifically, two research questions were presented to frame the analysis:
+Is an automatic or manual transmission better for MPG?
+How different is the MPG between automatic and manual transmissions?
+The research questions are addressed first by exploratory data analysis to become familiar with the variables and then statistical modeling to develop a regressionmodel using step-wise regression. The Results section interprets the coefficients and provides two findings: a) manual transmissions provide better MPG; and b) with 95% confidence, a manual transmission is estimated to result in a 0.05 to 5.82 MPG increase (statistically significant difference at 0.05%). Further investigation determined the model was well constructed by using residuals and diagnostics.</p>
+
+<p>The purpose of this project is to explore the relationship between a set of variables and miles per gallon (MPG). Specifically, we
+want to answer the following two questions:
+1. Is an automatic or manual transmission better for MPG?
+2. How different is the MPG between automatic and manual transmissions?
+This study shows that the answer depends on the cars weight (wt) and the &frac14; mile time (qsec), a performance benchmark for car
+acceleration. For light weighted cars, manual tranmission is better for MPG. However, for heavier cars, automatic transmission is
+better for MPG. For a given qsec, manual transmission is always better for MPG. For the range of data considered in this study, the
+difference in MPG between autmoatic and manual transmission is between -7 and 7.</p>
+
+<p>We analyze the mtcars data set in order to answer the question of whether an automatic or manual transmission is better for miles per gallon (MPG), and to quantify the difference. Our exploratory analysis shows that transmission type is correlated with characteristics such as weight and horsepower.
+We fit a variety of linear models to adjust for the confounding factors and estimate the effect of transmission. When we adjust for the confounding factors we are unable to estimate the effect of transmission reliably. Specifically, weight is the predictor that is most highly correlated with MPG, and weight is also very highly correlated with transmission type. This means that our data set is not able to tell us what the effect of transmission type is on MPG.</p>
+
+<p>This study examines the relationship between a set of variables and miles per gallon (MPG) for a collection of cars.
+The main purpose of the investigation was to establish whether automatic or manual transmission is better for MPG, and to quantify the relationship between transmission type and MPG, if it indeed exists. When ignoring other variables, data seemed to suggest that manual transmission is better for MPG. However, basic exploratory analysis revealed that a car&#39;s weight and horse power are important confounding variables. Consequently, proper regression analysis that accounted for confounding variables suggested that the difference in MPG by transmission type was not statistically significant (based on 5% confidence level). Therefore, a quantitative relationship between MPG and transmission type could not be established. Several regression models were explored and discussed in the context
+of the analysis.</p>
+
+<h3>Data Exploration</h3>
+
+<p>The mtcars dataset has 11 variables representing 10 features of a car and  one variable indicating the MPG. There are 32 observations where each row represents an automobile model.</p>
+
+<p>Using the summary command, we observed that there were no
+missing data points. In order to study the correlation between variables and outcome, we produced the scatterplots of each variable against the outcome.</p>
+
+<pre><code class="r">data(mtcars)
+summary(mtcars)
+</code></pre>
+
+<pre><code>##       mpg            cyl            disp             hp       
+##  Min.   :10.4   Min.   :4.00   Min.   : 71.1   Min.   : 52.0  
+##  1st Qu.:15.4   1st Qu.:4.00   1st Qu.:120.8   1st Qu.: 96.5  
+##  Median :19.2   Median :6.00   Median :196.3   Median :123.0  
+##  Mean   :20.1   Mean   :6.19   Mean   :230.7   Mean   :146.7  
+##  3rd Qu.:22.8   3rd Qu.:8.00   3rd Qu.:326.0   3rd Qu.:180.0  
+##  Max.   :33.9   Max.   :8.00   Max.   :472.0   Max.   :335.0  
+##       drat            wt            qsec            vs       
+##  Min.   :2.76   Min.   :1.51   Min.   :14.5   Min.   :0.000  
+##  1st Qu.:3.08   1st Qu.:2.58   1st Qu.:16.9   1st Qu.:0.000  
+##  Median :3.69   Median :3.33   Median :17.7   Median :0.000  
+##  Mean   :3.60   Mean   :3.22   Mean   :17.8   Mean   :0.438  
+##  3rd Qu.:3.92   3rd Qu.:3.61   3rd Qu.:18.9   3rd Qu.:1.000  
+##  Max.   :4.93   Max.   :5.42   Max.   :22.9   Max.   :1.000  
+##        am             gear           carb     
+##  Min.   :0.000   Min.   :3.00   Min.   :1.00  
+##  1st Qu.:0.000   1st Qu.:3.00   1st Qu.:2.00  
+##  Median :0.000   Median :4.00   Median :2.00  
+##  Mean   :0.406   Mean   :3.69   Mean   :2.81  
+##  3rd Qu.:1.000   3rd Qu.:4.00   3rd Qu.:4.00  
+##  Max.   :1.000   Max.   :5.00   Max.   :8.00
+</code></pre>
+
+<pre><code class="r">par(mfrow=c(3,4))
+with(mtcars,{
+plot(cyl, mpg)
+plot(disp, mpg)
+plot(hp, mpg)
+plot(drat, mpg)
+plot(wt, mpg)
+plot(qsec, mpg)
+plot(vs, mpg)
+plot(am, mpg)
+plot(gear, mpg)
+plot(carb, mpg)
+})
+</code></pre>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAxlBMVEX9/v0AAAAAADkAAGUAOTkAZrU5AAA5ADk5AGU5OQA5OTk5OWU5ZmU5ZrU5j9plAABlADllAGVlOWVlOY9lZjllZmVlZrVlj49lj9pltbVltdpltf2POQCPOTmPOWWPZjmPZmWPZo+PjzmPj2WPj4+Pj7WPtY+Ptf2P27WP29qP2/21ZgC1Zjm1ZmW1jzm1j4+1/rW1/tq1/v3ajznaj2Xaj4/atWXa29ra2/3a/rXa/tra/v39tWX9tY/924/9/rX9/tr9/v0NNeYJAAAAQnRSTlP//////////////////////////////////////////////////////////////////////////////////////wBEFhAAAAAACXBIWXMAAAsSAAALEgHS3X78AAAaMklEQVR4nO2dCX8jN3LFt0aW4ms09o6tOKFHsbLrzZqSEkecxGsPQ7K//5cK0bz6wFFAVXdTrPd+c4gEUH90P6KAvsQ/VZBJ/WnqDkDTCMYbFYw3KhhvVDDeqGC8UcF4o4LxRgXjjQrGGxWMNyoYb1Qw3qhgvFHBeKOC8UYF440KxhsVjDcqGG9UMN6oYLxRwXijgvFGBeONCsYbFYw3KhhvVDDeqGC8UcF4o4LxRgXjjQrGGxWMNyoYb1Qw3qiYxpOGijsJuj6da3wl6PsxRnnLaenuH1kHhHRu3UBl39vsES/pfBj/Kui7v6IOyOj8qv7avndhPKultAMyOr+qv7bvXaR6XkuzqT4Drx8DdH36KxnxcryI/gpGfKyDvqLXMceL59iLn+MpVtNXAuNZLaV8GZ1XLVzTV4JUz2tpNtUz8cPEAF2fDuON0gPGP7ozvNfD40Gfiu43fv3+U1Vt7l8aTUec4z10h5f1QEJvkYu6IaHHA6cih5blXOMDzXPEbu/b9eKFtYDeIpd1Q0BPxWVU8FXhpvokIS1++366o/GMT2x7WTcE9FRcRgVflYDxC/r6hmb7tvUV3TEP5/r0EVN9atuHTfW+bY8GTkXOTvVP8+qZPdOwxI4B+gj0yBw/5caDPjQ9lOpvt7PNbbypBh70qeg4gWOUDuON0nGRhtdSyBfSOfUiFX1FuCzLainly+i8auGavhIYz2op5cvovGrhmr4SpHpeS7Op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" alt="plot of chunk unnamed-chunk-1"/> </p>
+
+<p>The plot shows categorical variables (cyl, vs, am, gear, carb) that will be transformed from numeric to factors. We are preserving the original dataset in order to build models on it.</p>
+
+<pre><code class="r">data1 &lt;- mtcars
+data1$cyl &lt;- factor(data1$cyl)
+data1$vs &lt;- factor(data1$vs)
+data1$am &lt;- factor(data1$am)
+data1$gear &lt;- factor(data1$gear)
+data1$carb &lt;- factor(data1$carb)
+</code></pre>
+
+<p>Looking at the mpg column of the correlation matrix, qsec has the smallest
+(absolute) correlation ratio, while for cylinder variable it is 0.79, which is
+the highest absolute value. This results does not necessarily mean that qsec variable is not significant but that there another variables producing more impact on the outcome of mpg variable.</p>
+
+<pre><code class="r">s &lt;- cor(mtcars, use=&quot;pairwise.complete.obs&quot;, method=&quot;kendall&quot;)
+sort(abs(s[1,2:11]), decreasing = TRUE)
+</code></pre>
+
+<pre><code>##    cyl   disp     hp     wt     vs   carb     am   drat   gear   qsec 
+## 0.7953 0.7681 0.7428 0.7278 0.5897 0.5044 0.4690 0.4645 0.4332 0.3154
+</code></pre>
+
+<h3>Modelling</h3>
+
+<p>-models and comments
+-some diagnostics on the models to see if the main assumptions underlying the linear regression are verified</p>
+
+<p>Our next analysis will be to build regression models and examine the marginal impact transmission variable</p>
+
+<h2>Results</h2>
+
+<h2>Appendix</h2>
+
+<pre><code class="r">s &lt;- cor(mtcars, use=&quot;pairwise.complete.obs&quot;, method=&quot;kendall&quot;)
+s[1,2:11]
+</code></pre>
+
+<pre><code>##     cyl    disp      hp    drat      wt    qsec      vs      am    gear 
+## -0.7953 -0.7681 -0.7428  0.4645 -0.7278  0.3154  0.5897  0.4690  0.4332 
+##    carb 
+## -0.5044
+</code></pre>
+
+<pre><code class="r">sort(s[1,2:11], decreasing = TRUE)
+</code></pre>
+
+<pre><code>##      vs      am    drat    gear    qsec    carb      wt      hp    disp 
+##  0.5897  0.4690  0.4645  0.4332  0.3154 -0.5044 -0.7278 -0.7428 -0.7681 
+##     cyl 
+## -0.7953
+</code></pre>
+
+<pre><code class="r">mtcars1 &lt;- mtcars
+mtcars1$disp &lt;- log(mtcars1$disp)
+mtcars1$hp &lt;- log(mtcars1$hp)
+mtcars1$wt &lt;- log(mtcars1$wt)
+
+
+mtcars2 &lt;- mtcars
+mtcars2$disp &lt;- sqrt(mtcars2$disp)
+mtcars2$hp &lt;- sqrt(mtcars2$hp)
+mtcars2$wt &lt;- sqrt(mtcars2$wt)
+
+
+cor(mtcars1$mpg, mtcars1$disp)
+</code></pre>
+
+<pre><code>## [1] -0.9071
+</code></pre>
+
+<pre><code class="r">cor(mtcars1$mpg, mtcars1$hp)
+</code></pre>
+
+<pre><code>## [1] -0.8488
+</code></pre>
+
+<pre><code class="r">cor(mtcars1$wt, mtcars1$wt)
+</code></pre>
+
+<pre><code>## [1] 1
+</code></pre>
+
+<pre><code class="r">cor(mtcars2$mpg, mtcars2$disp)
+</code></pre>
+
+<pre><code>## [1] -0.8807
+</code></pre>
+
+<pre><code class="r">cor(mtcars2$mpg, mtcars2$hp)
+</code></pre>
+
+<pre><code>## [1] -0.8194
+</code></pre>
+
+<pre><code class="r">cor(mtcars2$wt, mtcars2$wt)
+</code></pre>
+
+<pre><code>## [1] 1
+</code></pre>
+
+<pre><code class="r">v &lt;- cor(mtcars1$mpg, mtcars1)
+sort(v)
+</code></pre>
+
+<pre><code>##  [1] -0.9071 -0.9001 -0.8522 -0.8488 -0.5509  0.4187  0.4803  0.5998
+##  [9]  0.6640  0.6812  1.0000
+</code></pre>
+
+<pre><code class="r">round(cor(mtcars1[,c(2,3,4,6)]),2)
+</code></pre>
+
+<pre><code>##       cyl disp   hp   wt
+## cyl  1.00 0.93 0.88 0.80
+## disp 0.93 1.00 0.86 0.90
+## hp   0.88 0.86 1.00 0.73
+## wt   0.80 0.90 0.73 1.00
+</code></pre>
+
+<pre><code class="r">round(cor(mtcars1, mtcars1[,c(2,3,4,6)]),2)
+</code></pre>
+
+<pre><code>##        cyl  disp    hp    wt
+## mpg  -0.85 -0.91 -0.85 -0.90
+## cyl   1.00  0.93  0.88  0.80
+## disp  0.93  1.00  0.86  0.90
+## hp    0.88  0.86  1.00  0.73
+## drat -0.70 -0.76 -0.56 -0.73
+## wt    0.80  0.90  0.73  1.00
+## qsec -0.59 -0.45 -0.68 -0.18
+## vs   -0.81 -0.73 -0.76 -0.56
+## am   -0.52 -0.64 -0.35 -0.72
+## gear -0.49 -0.55 -0.22 -0.58
+## carb  0.53  0.44  0.70  0.44
+</code></pre>
+
+<pre><code class="r">model1 &lt;- lm( mpg ~ wt , data = mtcars1)
+summary(model1)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ wt, data = mtcars1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -3.744 -2.095 -0.367  1.071  6.615 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    39.26       1.76    22.3  &lt; 2e-16 ***
+## wt            -17.09       1.51   -11.3  2.4e-12 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.67 on 30 degrees of freedom
+## Multiple R-squared:  0.81,   Adjusted R-squared:  0.804 
+## F-statistic:  128 on 1 and 30 DF,  p-value: 2.39e-12
+</code></pre>
+
+<pre><code class="r">model2 &lt;- lm( mpg ~ qsec , data = mtcars1)
+summary(model2)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ qsec, data = mtcars1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+##  -9.88  -3.45  -0.72   2.28  11.65 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)  
+## (Intercept)   -5.114     10.030   -0.51    0.614  
+## qsec           1.412      0.559    2.53    0.017 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 5.56 on 30 degrees of freedom
+## Multiple R-squared:  0.175,  Adjusted R-squared:  0.148 
+## F-statistic: 6.38 on 1 and 30 DF,  p-value: 0.0171
+</code></pre>
+
+<pre><code class="r">model3 &lt;- lm( mpg ~ hp , data = mtcars1)
+summary(model3)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ hp, data = mtcars1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.943 -1.705 -0.493  1.719  8.646 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    72.64       6.00   12.10  4.6e-13 ***
+## hp            -10.76       1.22   -8.79  8.4e-10 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 3.24 on 30 degrees of freedom
+## Multiple R-squared:  0.72,   Adjusted R-squared:  0.711 
+## F-statistic: 77.3 on 1 and 30 DF,  p-value: 8.39e-10
+</code></pre>
+
+<pre><code class="r">model4 &lt;- lm( mpg ~ am , data = mtcars1)
+summary(model4)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ am, data = mtcars1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -9.392 -3.092 -0.297  3.244  9.508 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    17.15       1.12   15.25  1.1e-15 ***
+## am              7.24       1.76    4.11  0.00029 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 4.9 on 30 degrees of freedom
+## Multiple R-squared:  0.36,   Adjusted R-squared:  0.338 
+## F-statistic: 16.9 on 1 and 30 DF,  p-value: 0.000285
+</code></pre>
+
+<pre><code class="r">modelA &lt;- lm( mpg ~ wt + qsec , data = mtcars1)
+summary(modelA)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ wt + qsec, data = mtcars1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.073 -1.388 -0.437  0.749  5.469 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   22.297      4.460    5.00  2.5e-05 ***
+## wt           -16.178      1.252  -12.92  1.5e-13 ***
+## qsec           0.893      0.222    4.02  0.00038 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.18 on 29 degrees of freedom
+## Multiple R-squared:  0.878,  Adjusted R-squared:  0.87 
+## F-statistic:  104 on 2 and 29 DF,  p-value: 5.66e-14
+</code></pre>
+
+<pre><code class="r">modelB &lt;- lm( mpg ~ hp + am , data = mtcars1)
+summary(modelA)
+</code></pre>
+
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ wt + qsec, data = mtcars1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.073 -1.388 -0.437  0.749  5.469 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   22.297      4.460    5.00  2.5e-05 ***
+## wt           -16.178      1.252  -12.92  1.5e-13 ***
+## qsec           0.893      0.222    4.02  0.00038 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.18 on 29 degrees of freedom
+## Multiple R-squared:  0.878,  Adjusted R-squared:  0.87 
+## F-statistic:  104 on 2 and 29 DF,  p-value: 5.66e-14
+</code></pre>
+
+<pre><code class="r">hist(resid(modelA))
+</code></pre>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAkFBMVEX9/v0AAAAAADkAAGUAOTkAOWUAOY8AZo8AZrU5AAA5ADk5AGU5OWU5OY85j485j9plAABlADllAGVlOQBlOY9lZjllZmVltbVltf2POQCPOTmPOWWPZgCPj2WP27WP29qP2/21ZgC124+1/rW1/tq1/v3ajzna24/a/rXa/tra/v39tWX924/9/rX9/tr9/v2An0NUAAAAMHRSTlP//////////////////////////////////////////////////////////////wBipdB4AAAACXBIWXMAAAsSAAALEgHS3X78AAAPeElEQVR4nO2diXbiyBVAI/fEMenp4FkywZ3NJNPMxGz//3dRlQTGZhFFPZfeq3fvOT3uBl1h1UULDEh/2IJL/jD2LwDjQHinEN4phHcK4Z1CeKcQ3imEdwrhnUJ4pxDeKYR3CuGdQninEN4phHcK4Z1CeKcQ3imEdwrhnUJ4pxDeKYR3CuGdYij8+vHTt+128/TpW/e3HfNZxkxXk+bueegx41/uX7bbxeVpwyTvftnmIT7INONX/BhMhn9z87zJCX+tHauuHx+GJnn9R/g126dV/G3n735nBZgMH//WDmo7qu061YS1atH+mG7jOvbpv22BzdPdX9t1edne3K6ly+ZP7e3f2ol2mbvpox1z9dPH28M03dy7xwxT/S1UXbR3vZ3VwcN2k+xm0P2yi+aXONkyTqQKs+HXj02I9r8u/Dz8o/0ZS343CeHDvb93E70smx39qtdPfxg+/q27fbrt5/4SHineFf7RPjnCc+hgVm8eNs7pdQbxGfPpP5OH7buNgQ5Mhd8NeBjV1aQfy7CxXk3aJOvHu+fVpB3vRYzUPOy0T9+WTRCaWZgk3Laffr+p76aPMw1Prd3cu0fq5xnzHc7q+GH3M+g3Sg/dnulo/zQ+ZsPHf4XhnMftb6jcbonjX9aP/drZSyH8w7Zbebtb99MfhA/39Kvz3fNu7t2zpp9nrHo4q+OHPZhBfCrM4p/t7nEVYSr80T6+6dfZc+HjNPvwr0+HwfC7uZ8L381qIHy/AwjTzAl/Oydezs37dKc29WGoF+3eNtz0PvypTX33RDncF8/DBv1gU38U/symfvfLdk+7Ju7sCX87b8PvVuZwOHXy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" alt="plot of chunk unnamed-chunk-4"/> </p>
+
+<pre><code class="r">hist(resid(modelB))
+</code></pre>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-4"/> </p>
+
+<pre><code class="r">##***************************************
+
+
+null = lm(mpg ~ 1, data = mtcars);
+full = lm(mpg ~ ., data = mtcars);
+forward &lt;- step(null, scope=list(lower=null, upper=full), direction=&quot;forward&quot;);
+</code></pre>
+
+<pre><code>## Start:  AIC=115.9
+## mpg ~ 1
+## 
+##        Df Sum of Sq  RSS   AIC
+## + wt    1       848  278  73.2
+## + cyl   1       818  308  76.5
+## + disp  1       809  317  77.4
+## + hp    1       678  448  88.4
+## + drat  1       522  604  98.0
+## + vs    1       497  630  99.3
+## + am    1       405  721 103.7
+## + carb  1       342  784 106.4
+## + gear  1       260  866 109.6
+## + qsec  1       197  929 111.8
+## &lt;none&gt;              1126 115.9
+## 
+## Step:  AIC=73.22
+## mpg ~ wt
+## 
+##        Df Sum of Sq RSS  AIC
+## + cyl   1      87.1 191 63.2
+## + hp    1      83.3 195 63.8
+## + qsec  1      82.9 196 63.9
+## + vs    1      54.2 224 68.3
+## + carb  1      44.6 234 69.6
+## + disp  1      31.6 247 71.4
+## &lt;none&gt;              278 73.2
+## + drat  1       9.1 269 74.2
+## + gear  1       1.1 277 75.1
+## + am    1       0.0 278 75.2
+## 
+## Step:  AIC=63.2
+## mpg ~ wt + cyl
+## 
+##        Df Sum of Sq RSS  AIC
+## + hp    1     14.55 177 62.7
+## + carb  1     13.77 177 62.8
+## &lt;none&gt;              191 63.2
+## + qsec  1     10.57 181 63.4
+## + gear  1      3.03 188 64.7
+## + disp  1      2.68 188 64.7
+## + vs    1      0.71 190 65.1
+## + am    1      0.12 191 65.2
+## + drat  1      0.00 191 65.2
+## 
+## Step:  AIC=62.66
+## mpg ~ wt + cyl + hp
+## 
+##        Df Sum of Sq RSS  AIC
+## &lt;none&gt;              177 62.7
+## + am    1      6.62 170 63.4
+## + disp  1      6.18 170 63.5
+## + carb  1      2.52 174 64.2
+## + drat  1      2.25 174 64.3
+## + qsec  1      1.40 175 64.4
+## + gear  1      0.86 176 64.5
+## + vs    1      0.06 177 64.7
+</code></pre>
+
+<pre><code class="r">backward &lt;- step(full, data=mtcars, direction=&quot;backward&quot;);
+</code></pre>
+
+<pre><code>## Start:  AIC=70.9
+## mpg ~ cyl + disp + hp + drat + wt + qsec + vs + am + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - cyl   1      0.08 148 68.9
+## - vs    1      0.16 148 68.9
+## - carb  1      0.41 148 69.0
+## - gear  1      1.35 149 69.2
+## - drat  1      1.63 149 69.2
+## - disp  1      3.92 151 69.7
+## - hp    1      6.84 154 70.3
+## - qsec  1      8.86 156 70.8
+## &lt;none&gt;              148 70.9
+## - am    1     10.55 158 71.1
+## - wt    1     27.01 174 74.3
+## 
+## Step:  AIC=68.92
+## mpg ~ disp + hp + drat + wt + qsec + vs + am + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - vs    1      0.27 148 67.0
+## - carb  1      0.52 148 67.0
+## - gear  1      1.82 149 67.3
+## - drat  1      1.98 150 67.3
+## - disp  1      3.90 152 67.7
+## - hp    1      7.36 155 68.5
+## &lt;none&gt;              148 68.9
+## - qsec  1     10.09 158 69.0
+## - am    1     11.84 159 69.4
+## - wt    1     27.03 175 72.3
+## 
+## Step:  AIC=66.97
+## mpg ~ disp + hp + drat + wt + qsec + am + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - carb  1      0.69 148 65.1
+## - gear  1      2.14 150 65.4
+## - drat  1      2.21 150 65.4
+## - disp  1      3.65 152 65.8
+## - hp    1      7.11 155 66.5
+## &lt;none&gt;              148 67.0
+## - am    1     11.57 159 67.4
+## - qsec  1     15.68 164 68.2
+## - wt    1     27.38 175 70.4
+## 
+## Step:  AIC=65.12
+## mpg ~ disp + hp + drat + wt + qsec + am + gear
+## 
+##        Df Sum of Sq RSS  AIC
+## - gear  1       1.6 150 63.5
+## - drat  1       1.9 150 63.5
+## &lt;none&gt;              148 65.1
+## - disp  1      10.1 159 65.2
+## - am    1      12.3 161 65.7
+## - hp    1      14.8 163 66.2
+## - qsec  1      26.4 175 68.4
+## - wt    1      69.1 218 75.3
+## 
+## Step:  AIC=63.46
+## mpg ~ disp + hp + drat + wt + qsec + am
+## 
+##        Df Sum of Sq RSS  AIC
+## - drat  1       3.3 153 62.2
+## - disp  1       8.5 159 63.2
+## &lt;none&gt;              150 63.5
+## - hp    1      13.3 163 64.2
+## - am    1      20.0 170 65.5
+## - qsec  1      25.6 176 66.5
+## - wt    1      67.6 218 73.4
+## 
+## Step:  AIC=62.16
+## mpg ~ disp + hp + wt + qsec + am
+## 
+##        Df Sum of Sq RSS  AIC
+## - disp  1       6.6 160 61.5
+## &lt;none&gt;              153 62.2
+## - hp    1      12.6 166 62.7
+## - qsec  1      26.5 180 65.3
+## - am    1      32.2 186 66.3
+## - wt    1      69.0 222 72.1
+## 
+## Step:  AIC=61.52
+## mpg ~ hp + wt + qsec + am
+## 
+##        Df Sum of Sq RSS  AIC
+## - hp    1       9.2 169 61.3
+## &lt;none&gt;              160 61.5
+## - qsec  1      20.2 180 63.3
+## - am    1      26.0 186 64.3
+## - wt    1      78.5 239 72.3
+## 
+## Step:  AIC=61.31
+## mpg ~ wt + qsec + am
+## 
+##        Df Sum of Sq RSS  AIC
+## &lt;none&gt;              169 61.3
+## - am    1      26.2 195 63.9
+## - qsec  1     109.0 278 75.2
+## - wt    1     183.3 353 82.8
+</code></pre>
+
+<pre><code class="r">stepwise &lt;- step(null, scope = list(upper=full), data=mtcars, direction=&quot;both&quot;);
+</code></pre>
+
+<pre><code>## Start:  AIC=115.9
+## mpg ~ 1
+## 
+##        Df Sum of Sq  RSS   AIC
+## + wt    1       848  278  73.2
+## + cyl   1       818  308  76.5
+## + disp  1       809  317  77.4
+## + hp    1       678  448  88.4
+## + drat  1       522  604  98.0
+## + vs    1       497  630  99.3
+## + am    1       405  721 103.7
+## + carb  1       342  784 106.4
+## + gear  1       260  866 109.6
+## + qsec  1       197  929 111.8
+## &lt;none&gt;              1126 115.9
+## 
+## Step:  AIC=73.22
+## mpg ~ wt
+## 
+##        Df Sum of Sq  RSS   AIC
+## + cyl   1        87  191  63.2
+## + hp    1        83  195  63.8
+## + qsec  1        83  195  63.9
+## + vs    1        54  224  68.3
+## + carb  1        45  234  69.6
+## + disp  1        32  247  71.4
+## &lt;none&gt;               278  73.2
+## + drat  1         9  269  74.2
+## + gear  1         1  277  75.1
+## + am    1         0  278  75.2
+## - wt    1       848 1126 115.9
+## 
+## Step:  AIC=63.2
+## mpg ~ wt + cyl
+## 
+##        Df Sum of Sq RSS  AIC
+## + hp    1      14.6 177 62.7
+## + carb  1      13.8 177 62.8
+## &lt;none&gt;              191 63.2
+## + qsec  1      10.6 181 63.4
+## + gear  1       3.0 188 64.7
+## + disp  1       2.7 188 64.7
+## + vs    1       0.7 190 65.1
+## + am    1       0.1 191 65.2
+## + drat  1       0.0 191 65.2
+## - cyl   1      87.1 278 73.2
+## - wt    1     117.2 308 76.5
+## 
+## Step:  AIC=62.66
+## mpg ~ wt + cyl + hp
+## 
+##        Df Sum of Sq RSS  AIC
+## &lt;none&gt;              177 62.7
+## - hp    1      14.6 191 63.2
+## + am    1       6.6 170 63.4
+## + disp  1       6.2 170 63.5
+## - cyl   1      18.4 195 63.8
+## + carb  1       2.5 174 64.2
+## + drat  1       2.2 174 64.3
+## + qsec  1       1.4 175 64.4
+## + gear  1       0.9 176 64.5
+## + vs    1       0.1 177 64.7
+## - wt    1     115.4 292 76.7
+</code></pre>
+
+<pre><code class="r">null = lm(mpg ~ 1, data = mtcars1);
+full = lm(mpg ~ ., data = mtcars1);
+forward &lt;- step(null, scope=list(lower=null, upper=full), direction=&quot;forward&quot;);
+</code></pre>
+
+<pre><code>## Start:  AIC=115.9
+## mpg ~ 1
+## 
+##        Df Sum of Sq  RSS   AIC
+## + disp  1       927  199  62.6
+## + wt    1       912  214  64.8
+## + cyl   1       818  308  76.5
+## + hp    1       811  315  77.2
+## + drat  1       522  604  98.0
+## + vs    1       497  630  99.3
+## + am    1       405  721 103.7
+## + carb  1       342  784 106.4
+## + gear  1       260  866 109.6
+## + qsec  1       197  929 111.8
+## &lt;none&gt;              1126 115.9
+## 
+## Step:  AIC=62.56
+## mpg ~ disp
+## 
+##        Df Sum of Sq RSS  AIC
+## + wt    1      41.9 158 57.0
+## + carb  1      32.8 167 58.8
+## + hp    1      19.7 180 61.2
+## &lt;none&gt;              200 62.6
+## + am    1       0.5 199 64.5
+## + cyl   1       0.4 199 64.5
+## + gear  1       0.4 199 64.5
+## + qsec  1       0.2 199 64.5
+## + drat  1       0.1 199 64.5
+## + vs    1       0.0 199 64.6
+## 
+## Step:  AIC=57.01
+## mpg ~ disp + wt
+## 
+##        Df Sum of Sq RSS  AIC
+## + hp    1      33.8 124 51.3
+## + carb  1      25.4 132 53.4
+## + qsec  1      25.3 132 53.4
+## &lt;none&gt;              158 57.0
+## + gear  1       5.4 152 57.9
+## + am    1       5.2 152 57.9
+## + vs    1       4.9 153 58.0
+## + cyl   1       4.7 153 58.0
+## + drat  1       2.1 156 58.6
+## 
+## Step:  AIC=51.28
+## mpg ~ disp + wt + hp
+## 
+##        Df Sum of Sq RSS  AIC
+## &lt;none&gt;              124 51.3
+## + qsec  1     2.183 122 52.7
+## + gear  1     1.484 122 52.9
+## + carb  1     1.085 123 53.0
+## + am    1     0.662 123 53.1
+## + vs    1     0.038 124 53.3
+## + cyl   1     0.018 124 53.3
+## + drat  1     0.002 124 53.3
+</code></pre>
+
+<pre><code class="r">backward &lt;- step(full, data=mtcars1, direction=&quot;backward&quot;);
+</code></pre>
+
+<pre><code>## Start:  AIC=61.55
+## mpg ~ cyl + disp + hp + drat + wt + qsec + vs + am + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - drat  1      0.02 110 59.6
+## - vs    1      0.18 110 59.6
+## - am    1      0.95 111 59.8
+## - disp  1      1.48 112 60.0
+## - carb  1      3.07 113 60.4
+## - cyl   1      4.24 114 60.8
+## - qsec  1      4.77 115 60.9
+## - gear  1      5.72 116 61.2
+## &lt;none&gt;              110 61.5
+## - hp    1      8.35 118 61.9
+## - wt    1     18.68 129 64.6
+## 
+## Step:  AIC=59.55
+## mpg ~ cyl + disp + hp + wt + qsec + vs + am + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - vs    1      0.18 110 57.6
+## - am    1      0.98 111 57.8
+## - disp  1      1.50 112 58.0
+## - carb  1      3.07 113 58.4
+## - cyl   1      4.24 114 58.8
+## - qsec  1      4.77 115 58.9
+## - gear  1      5.95 116 59.2
+## &lt;none&gt;              110 59.6
+## - hp    1      8.81 119 60.0
+## - wt    1     18.73 129 62.6
+## 
+## Step:  AIC=57.6
+## mpg ~ cyl + disp + hp + wt + qsec + am + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - am    1      1.25 112 56.0
+## - disp  1      1.42 112 56.0
+## - carb  1      3.04 113 56.5
+## - qsec  1      4.74 115 56.9
+## - cyl   1      4.99 115 57.0
+## - gear  1      5.82 116 57.2
+## &lt;none&gt;              110 57.6
+## - hp    1      9.55 120 58.3
+## - wt    1     18.57 129 60.6
+## 
+## Step:  AIC=55.96
+## mpg ~ cyl + disp + hp + wt + qsec + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - disp  1      2.51 114 54.7
+## - qsec  1      3.52 115 55.0
+## - carb  1      3.59 115 55.0
+## - cyl   1      4.97 116 55.4
+## &lt;none&gt;              112 56.0
+## - gear  1      9.46 121 56.6
+## - hp    1      9.56 121 56.6
+## - wt    1     18.15 130 58.8
+## 
+## Step:  AIC=54.68
+## mpg ~ cyl + hp + wt + qsec + gear + carb
+## 
+##        Df Sum of Sq RSS  AIC
+## - carb  1       1.5 116 53.1
+## - cyl   1       2.9 117 53.5
+## - qsec  1       5.6 120 54.2
+## &lt;none&gt;              114 54.7
+## - gear  1       8.4 122 54.9
+## - hp    1      16.8 131 57.1
+## - wt    1      59.6 174 66.1
+## 
+## Step:  AIC=53.09
+## mpg ~ cyl + hp + wt + qsec + gear
+## 
+##        Df Sum of Sq RSS  AIC
+## - cyl   1       2.8 118 51.8
+## - gear  1       7.2 123 53.0
+## - qsec  1       7.3 123 53.0
+## &lt;none&gt;              116 53.1
+## - hp    1      18.8 134 55.9
+## - wt    1      82.6 198 68.3
+## 
+## Step:  AIC=51.84
+## mpg ~ hp + wt + qsec + gear
+## 
+##        Df Sum of Sq RSS  AIC
+## - gear  1       4.4 123 51.0
+## - qsec  1       4.5 123 51.0
+## &lt;none&gt;              118 51.8
+## - hp    1      16.0 134 53.9
+## - wt    1      86.7 205 67.4
+## 
+## Step:  AIC=51.03
+## mpg ~ hp + wt + qsec
+## 
+##        Df Sum of Sq RSS  AIC
+## - qsec  1       3.2 126 49.9
+## &lt;none&gt;              123 51.0
+## - hp    1      14.6 137 52.6
+## - wt    1     135.9 259 72.9
+## 
+## Step:  AIC=49.85
+## mpg ~ hp + wt
+## 
+##        Df Sum of Sq RSS  AIC
+## &lt;none&gt;              126 49.9
+## - hp    1      87.8 214 64.8
+## - wt    1     188.8 315 77.2
+</code></pre>
+
+<pre><code class="r">stepwise &lt;- step(null, scope = list(upper=full), data= mtcars1, direction=&quot;both&quot;);
+</code></pre>
+
+<pre><code>## Start:  AIC=115.9
+## mpg ~ 1
+## 
+##        Df Sum of Sq  RSS   AIC
+## + disp  1       927  199  62.6
+## + wt    1       912  214  64.8
+## + cyl   1       818  308  76.5
+## + hp    1       811  315  77.2
+## + drat  1       522  604  98.0
+## + vs    1       497  630  99.3
+## + am    1       405  721 103.7
+## + carb  1       342  784 106.4
+## + gear  1       260  866 109.6
+## + qsec  1       197  929 111.8
+## &lt;none&gt;              1126 115.9
+## 
+## Step:  AIC=62.56
+## mpg ~ disp
+## 
+##        Df Sum of Sq  RSS   AIC
+## + wt    1        42  158  57.0
+## + carb  1        33  167  58.8
+## + hp    1        20  180  61.2
+## &lt;none&gt;               199  62.6
+## + am    1         0  199  64.5
+## + cyl   1         0  199  64.5
+## + gear  1         0  199  64.5
+## + qsec  1         0  199  64.5
+## + drat  1         0  199  64.5
+## + vs    1         0  199  64.6
+## - disp  1       927 1126 115.9
+## 
+## Step:  AIC=57.01
+## mpg ~ disp + wt
+## 
+##        Df Sum of Sq RSS  AIC
+## + hp    1      33.8 124 51.3
+## + carb  1      25.4 132 53.4
+## + qsec  1      25.3 132 53.4
+## &lt;none&gt;              158 57.0
+## + gear  1       5.4 152 57.9
+## + am    1       5.2 152 57.9
+## + vs    1       4.9 153 58.0
+## + cyl   1       4.7 153 58.0
+## + drat  1       2.1 156 58.6
+## - wt    1      41.9 200 62.6
+## - disp  1      56.2 214 64.8
+## 
+## Step:  AIC=51.28
+## mpg ~ disp + wt + hp
+## 
+##        Df Sum of Sq RSS  AIC
+## - disp  1       2.2 126 49.9
+## &lt;none&gt;              124 51.3
+## + qsec  1       2.2 122 52.7
+## + gear  1       1.5 122 52.9
+## + carb  1       1.1 123 53.0
+## + am    1       0.7 123 53.1
+## + vs    1       0.0 124 53.3
+## + cyl   1       0.0 124 53.3
+## + drat  1       0.0 124 53.3
+## - hp    1      33.8 158 57.0
+## - wt    1      56.0 180 61.2
+## 
+## Step:  AIC=49.85
+## mpg ~ wt + hp
+## 
+##        Df Sum of Sq RSS  AIC
+## &lt;none&gt;              126 49.9
+## + qsec  1       3.2 123 51.0
+## + gear  1       3.2 123 51.0
+## + disp  1       2.2 124 51.3
+## + am    1       1.7 124 51.4
+## + cyl   1       0.7 125 51.7
+## + vs    1       0.4 126 51.7
+## + drat  1       0.3 126 51.8
+## + carb  1       0.0 126 51.9
+## - hp    1      87.8 214 64.8
+## - wt    1     188.8 315 77.2
+</code></pre>
+
+<pre><code class="r">summary(cars)
+</code></pre>
+
+<pre><code>##      speed           dist    
+##  Min.   : 4.0   Min.   :  2  
+##  1st Qu.:12.0   1st Qu.: 26  
+##  Median :15.0   Median : 36  
+##  Mean   :15.4   Mean   : 43  
+##  3rd Qu.:19.0   3rd Qu.: 56  
+##  Max.   :25.0   Max.   :120
+</code></pre>
+
+<p>You can also embed plots, for example:</p>
+
+<pre><code class="r">plot(cars)
+</code></pre>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAGwCAMAAABy/YdMAAAAbFBMVEX9/v0AAAAAADkAAGUAOTkAOWUAOY8AZrU5AAA5ADk5AGU5OY85j9plAABlADllAGVlOQBlZjlltf2POQCPOTmPOWWPjzmPtY+P2/21ZgC1/rW1/v3ajzna24/a/v39tWX924/9/rX9/tr9/v0hhXJqAAAAJHRSTlP//////////////////////////////////////////////wBYLA0NAAAACXBIWXMAAAsSAAALEgHS3X78AAAJjElEQVR4nO3di3LbuBlA4bW7jd2snLTyXqSNGl38/u9YkVbqRKIVUsRPAjjnm061bSYIN8ckCF2gX16E9MvcB6B5GB7K8FCGhzI8lOGhDA9leCjDQxkeyvBQhocyPJThoQwPZXgow0MZHsrwUIaHMjyU4aEMD2V4KMNDGR7K8FCGhzI8lOGhDA9leCjDQxkeyvBQhocyPJThoQwPZXgow0MZHsrwUIaHMjyU4aEMD2V4KMNDGR7K8FCGhzI8lOGhDA9leCjDQxkeakz4O+UsMPyI36too8PvHtufn398GTq0ZjU2/OF52T5uP3wdOLRmNTb8/vOXHx77D61ZecZDjZ7j90/O8SXyrh7K8FAplnP3K2/uMvPTJ2iS3NwdnheGz8rdy0//+tMs59YP34Xv+aSg4kwQ/rSc2/z60TM+HxOEPy7nFs3D5nI9Z/j5xM/xtw+tWRkeyvBQhocavZx7Oq3dvLkry+gzvnn25qahNavxl/r9p9VNQ2tWzvFQhocyPJThoQwPZXgow0MZHsrwUIaHMjyU4aEMD2V4KMNDGR7K8FCGhzI8lOGhDA9leCjDQxkeyvBQhocyPJThody2HMpNjKHcthzKMx7KbcuhvKuHMjyUyzkob+6gApZzblteAs94KJdzUN7VQxkeyvBQhody23Ioty2HcttyKOd4KMNDGR7K8FCGr5JfMco0xZcK3zy04vR4O4Tha+QZD+UZD+UZT+Vdvd5heCjDQxkeyvBQhocyPJThoQwPZXgow0MZHsrwEOcv2xie4eKFWsNPZOatYQw/kx5vjZj2zzf8NOYO7xw/k9nDnzP8RHLb/s3wUG5pCuUGh1B+QwWUZzyUW5pel9vNeDLe1V+V3fI7mYDwNW1bbvh3HZdzD5tqL/WGf8/h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" alt="plot of chunk unnamed-chunk-5"/> </p>
+
+<p>** library(knitr)
+** pandoc(&#39;projectCars.md&#39;, format = &#39;latex&#39;)</p>
+
+</body>
+
+</html>
+

@@ -1,0 +1,154 @@
+---
+title: "Predict the manner of exercise"
+author: "Rathod Sushma"
+date: "Wednesday, June 18, 2014"
+output: html_document
+---
+I) AIM :
+
+The aim of the project is to "predict the manner in which people did exercise".
+
+II) Data :
+
+The training data of this project is available here <https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv>.
+The test data is available here <https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv>.
+The data source for this project comes from here <http://groupware.les.inf.puc-rio.br/har>.
+
+The predictor variable is "classe" and there are 158 exploratory variables.
+Using one or more predictor variables we got to build a model which predicts the manner in which they did exercise.
+
+III) Data Pre-Processing :
+
+The following are the preprocessing steps followed for this analysis :
+
+* 1. All the columns which contained "NA's" and missing values have been removed.
+* 2. The column namely "user_name" is removed as it is not relavent predictor for the current analysis. In the same way columns with "timestamp" and "new_window" were removed.
+* 3. Finally a check for number of missing values was done which resulted in "Zero" missing values, which is a pretty good start for the analysis !
+
+
+IV) Exploratory Analysis :
+
+a) Descriptive Statistics :
+
+```{r,echo=FALSE}
+setwd("D:/sushma/PracticalMachineLearning/project/training")
+train <- read.csv("pml-training.csv",header=T,sep=",",na.strings=c("NA",""))
+NAs <- apply(train,2,function(x) {sum(is.na(x))})
+train <- train[,which(NAs == 0)]
+train <- na.omit(train)
+train <- train[,-c(1:5)]
+```
+
+b) Checking for missing data :
+
+```{r}
+sum(is.na(train))
+```
+
+c) Exploratory Plots :
+
+The following graph describes the distribution of No.of windows
+
+```{r}
+plot(train$classe,train$num_window,main="Distribution of no of windows wrt Class",xlab="Classe",ylab="No.of Windows")
+```
+
+V) Statistical Prediction/Modelling :
+
+a) Splitting the data :
+The actual training data set was randomly splitted (by setting seeds) into three subsets in a ratio of 60, 20 and 20 percentages which were called as train,test and evaluation sets respectively. The model is built using train data set. For testing the accuracy of the model "test" data was used and a best model amongst was selected and finally was used on "evaluation" data.
+
+```{r,echo=FALSE,results='hide'}
+splitdf <- function(dataframe, seed=NULL) {
+    if (!is.null(seed)) set.seed(seed)
+    index <- 1:nrow(dataframe)
+    trainindex <- sample(index, trunc(length(index)/1.666667))
+    trainset <- dataframe[trainindex, ]
+    remainingindex <- index[-(trainindex)]
+    
+    testindex <- sample(remainingindex,trunc(length(index)/5))
+    testset <- dataframe[testindex, ]
+    
+    evalindex <- sample(remainingindex,trunc(length(index)/5))
+    evalset <- dataframe[evalindex, ]
+    list(trainset=trainset,testset=testset,evalset=evalset)
+}
+splits <- splitdf(train, seed=369)
+str(splits)
+lapply(splits,nrow)
+lapply(splits,head)
+training <- splits$trainset
+testing <- splits$testset
+evaluation <- splits$evalset
+```
+ 
+b) Building decision tree model:
+
+Fitting a tree model using three different types of trees,.i.e by using "rpart", "C5.0","C4.5" on training data.
+
+```{r,echo=FALSE,results='hide'}
+library(rpart)
+dtCart=rpart(classe~.,data=training,method="class")
+printcp(dtCart)
+summary(dtCart)
+library(RWeka)
+dtC45= J48(classe ~ ., data = training)
+summary(dtC45)
+library(C50)
+dtC50= C5.0(classe ~ ., data = training, rules=TRUE)
+summary(dtC50)
+```
+
+c) Testing the model :
+
+Here we are going to see which is the more accurate model among the three different types of trees.
+
+```{r,echo=FALSE}
+library(caret)
+a1 <- table(testing$classe, predict(dtCart, newdata=testing, type="class"))
+a2<-table(testing$classe, predict(dtC50, newdata=testing, type="class"))
+a3<-table(testing$classe, predict(dtC45, newdata=testing, type="class"))
+# confusionMatrix(a1)
+# confusionMatrix(a2)
+# confusionMatrix(a3)
+```
+
+```{r}
+# Classification matrix for "Cart Model"
+confusionMatrix(a1)
+# Classification matrix for "C5.0 model"
+confusionMatrix(a2)
+# Classification matrix for "C4.5 model"
+confusionMatrix(a3)
+```
+
+From the above information it is evident that "C5.0 model" gives the best results of accuracy,sensitivity,Pos Pred Value, neg Pred Value and specificity.
+
+So, we can apply tree model, "C5.0" on the evaluation data set.
+
+```{r}
+# C5.0 :
+a1<-table(evaluation$classe, predict(dtC50, newdata=evaluation, type="class"))
+rceval_c50<-sum(diag(a1))/sum(a1)*100
+confusionMatrix(a1)
+cat("Sensitivity in evaluation data using c5.0:", rceval_c50,"%" )
+```
+
+As we have seen above that tree model "C5.0" gives good results on the evaluation data we can apply the model on 20 new observations, which would predict the type of exercise performed by the people.
+
+The same preprocessing steps are applied on these 20 new observations, let's say it as Realtest data.
+
+```{r}
+# Preprocessing on testing data :
+Realtest <- read.csv("pml-testing.csv",header=T,sep=",",na.string=c("NA",""))
+NAs <- apply(Realtest,2,function(x) {sum(is.na(x))})
+Realtest <- Realtest[,which(NAs == 0)]
+Realtest <- Realtest[,-c(1:6)]
+sum(is.na(Realtest))
+
+# testing our models on test data:
+# C5.0 :
+predict(dtC50, newdata=Realtest, type="class")
+```
+ 
+

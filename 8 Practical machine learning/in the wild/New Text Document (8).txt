@@ -1,0 +1,200 @@
+---
+title: "Write up for Practical Machine Learning assignment"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_chunk$set(cache=TRUE,fig.path='Pictures/Plot-')
+setwd('C:/Users/bpajusco/Documents/Coursera/Practical_ML')
+```
+
+### 1. Introduction and motivations
+
+This write-up explains the methodology and process used to fit and predict a dataset of sensor measurements embedded in wearable devices. This is an assignment for the Coursera Practical Machine Learning course which is designed to apply several statistical and computer science concepts to everyday data analysis tasks. The dataset consist of a reduced version (circa 12%) of a large set of accelerometer readings collected by Ugulino el al. [1] in which the authors have classified 5 main activities (Sitting, Sitting Down, Standing, Standing Up, Walking) based on sensor readings. The aim of the analysis is to build a model to maximise forecasting accuracy on a set of 20 unlabelled observations which are provided as a test dataset.
+
+[1] H.Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012.
+
+### 2. Data Pre-process
+
+The raw dataset downloaded from the Coursera website contained 19,622 different observations, comprised of 160 individual features. As it is often the case with real data, not all the observations were present and not every feature collected can make a meaningful contribution to the predictive model. In this case, there were quite a few columns with missing values across all observations. In some other cases, there were summary statistics that had several missing inputs and some invalid entries like #/DIV0! In all those cases we proceeded to completely eliminate the column from the dataset, instead of trying to back fill the data. In particular, we decided to eliminate all statistics like mean, standard deviation, skewness, etc. since we are in possession of a full set of observed data to analyse. After removing columns with invalid or duplicate data, we could reduce the original set of 160 down to 60 individual features; we then proceeded to remove the first 7 since they contained mostly qualitative data like user name or observation ID as well at time and date of measurement. It could be argued that time stamps offer some insight on the activities but it was decided to eliminate the feature since -while is plausible that measurement followed some chronological order- the data itself provided too little information about it, to infer anything meaningful from the time dimension of the data. The analysis seeks to make the best possible prediction of the 'classe' variable and we employed 52 predictors in our study. As a final part of the data preparation step, we centred the data by removing the mean from each feature and scaled it by range. The reason for using range, as opposed to standard deviation, is that some of the features appear to be skewed and not too well conforming with the assumption of normally distributed data. Standard deviation, as widely known, is a good scale estimator for normal data but for non-symmetric distributions (skewed or multi-modal) range is a better scale estimation since it measures actual spread of the data.
+
+###
+```{r pre_process_data}
+require(RCurl)
+require(caret)
+require(kernlab)
+require(randomForest)
+
+# Load datasets
+trainRawData <- read.csv(text=getURL('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', ssl.verifypeer=0L, followlocation=1L), header=TRUE, stringsAsFactors=FALSE)
+
+SubmitRawData <- read.csv(text=getURL('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv',ssl.verifypeer=0L, followlocation=1L), header=TRUE, stringsAsFactors=FALSE)
+
+
+#Pre-process raw train data by removing NAs
+cleantrain <- trainRawData[,colSums(is.na(trainRawData))==0]
+
+#Further remove qualitative features, trial numbers and summary statistics of individual observations from training data
+cleantrain <- cleantrain[-c(1:7,unique(which(cleantrain=='#DIV/0!',arr.ind = TRUE)[,2]))]
+
+
+#Center the data and scale it by range
+scale <- scale(cleantrain[,-dim(cleantrain)[2]], center = TRUE,
+                scale = apply(cleantrain[,-dim(cleantrain)[2]],2,max)-
+                        apply(cleantrain[,-dim(cleantrain)[2]],2,min))
+scaledtrain <- data.frame(scale)
+scaledtrain$classe <- cleantrain[,'classe']
+
+#Pre-process submission data by removing NAs
+cleansubmit <- SubmitRawData[,colSums(is.na(SubmitRawData))==0]
+
+#Further remove qualitative features and summary statistics of individual observations from submission data
+cleansubmit <- cleansubmit[-c(1:7,unique(which(cleansubmit=='#DIV/0!',arr.ind = TRUE)[,2]))]
+
+#Remove temporary variables
+rm(list=c('cleantrain','trainRawData', 'scale', 'SubmitRawData'))
+
+```
+
+### 3. Partition training data in train and validation sets
+
+The large amount of data allow us to further refine our training data sample and split it into a proportion used to fit individual models and a held-out validation part only used to test the output of the best-fit model built on the training data. In order to reduce over-fitting on the training dataset we are using 10-fold cross validation on the training data. This is used in combination with grid-search to tune the model's hyper-parameters so we are making an extensive use of training data, making it really quite unusable to make any predictions on. In order to have the best balance between training and validation data, we have randomly split the observations in the following way: 60% of the original training data is allocated to training the model, the remaining 40% is used as held-out validation set. The validation error should therefore converge or be quite close to a true out of sample (test) error since we have elected to use less training samples in order to provide a validation estimate of our model on the largest possible set. In the bias-variance trade-off, our choice is to induce some bias in order to reduce variance. Using 10-fold cross validation on our training set allows us to make multiple partitions of the training data and effectively overcome the fact that we held out more data sample for our validation step. Also, since we are using two sophisticated models (Random Forest and SVM) the machinery employed should help us recoup some precision that we have sacrificed in our choice of data split. This way we should be close to achieve the best of both worlds; minimising variance by approximating an out of sample error with a larger than usual validation set whilst containing bias by fitting relatively complex models (RF and SVM) and 10-fold cross validation to tune hyperparameters.
+
+```{r train_validation_split}
+set.seed(13791)
+trainIndex <- createDataPartition(scaledtrain$classe, p=0.6,list=FALSE)
+traindata <- scaledtrain[trainIndex,]
+valdata <- scaledtrain[-trainIndex,]
+
+```
+
+
+
+### 4. Random Forest Fit
+
+Given the nature of the data, it seems that a tree based model could yield some good predictions. A common issue with this kind of models is that they over-fit the data; usually a fit of a single tree doesn't generalise very well on other datasets and techniques like boosting or bagging are preferable to traditional tree based models. Random forests provide a further advantage in that the trees are recombined randomly by splitting variables during the fitting process which de-correlates the data and yields better predictions. As per the section above, we used 10-fold cross validation and grid search to come up with the best set of parameters for our data.
+
+```{r RF_fit, warning=FALSE}
+#Fit the model with 10-fold cross validation
+RF_grid <- data.frame(mtry = c(round(ncol(traindata)/3,0),
+                               round(sqrt(ncol(traindata)),0),
+                               round(log(ncol(traindata)),0)))
+fit_Cont <- trainControl(method = 'cv', number = 10)
+set.seed(10201)
+RF_fit <- train(as.factor(classe) ~ ., method='rf', data=traindata,
+                tuneGrid = RF_grid, trControl = fit_Cont)
+
+#Print out the best-fit model parameters
+RF_fit$finalModel
+```
+
+The final model selected via 10-fold cross validation has a split parameter of ```r RF_fit$finalModel$mtry ``` and used ```r RF_fit$finalModel$ntree ``` trees.
+
+
+
+```{r RF_Param_Tuning, dev='png', fig.ext='png', fig.keep='all', warning=FALSE}
+
+#Make predictions on the validation set
+predict_RF <- predict(RF_fit$finalModel, valdata)
+
+#Make Parameter Tuning plot
+plot(RF_fit,main=('RF Cross-Validation Tuning Parameter Plot'))
+
+```
+
+The plot above shows changes in cross validation error (on the training set) corresponding to the best combination of number of splits when fitting trees.
+
+
+```{r RF_Var_Imp, dev='png', fig.ext='png', fig.keep='all', warning=FALSE}
+
+#Show RF Variable Importance Plot
+RF_imp <- varImp(RF_fit, scale=FALSE)
+plot(RF_imp, top=20, main='Random Forest 20 Most important Variables')
+
+```
+
+Random Forest models can measure the most important variables used in during the fitting process; when randomly splitting and recombining trees the quality of fit is assessed with a heterogeneity measure (usually Gini's Index) with the view of measuring the impact of excluding a particular feature from the fit. At the end of the fit, each predictor is ranked and we can visualise those variables that have led to a more pronounced drop in dispersion; here a sharp drop in heterogeneity signifies that the fit more closely approximate a random variable and so the variable which was excluded from that particular run is thought to be a significant one since its exclusion led to a loss of structure in the data, which is the reason why it more closely resemble a random process.
+
+
+```{r RF_Conf_Mat, dev='png', fig.ext='png', fig.keep='all', warning=FALSE}
+
+#Make Confusion Matrix plot
+RF_cm <- confusionMatrix(predict_RF, valdata$classe)
+plt <- ggplot(as.data.frame(RF_cm$table/colSums(RF_cm$table)))
+plt + geom_tile(aes(x=Reference, y=Prediction, alpha=Freq)) + scale_x_discrete(name='Actual Class') + scale_y_discrete(name='Predicted Class') + geom_text(aes(x=Reference, y=Prediction, label=sprintf("%.1d", Freq)),data= as.data.frame(RF_cm$table), size=3, col='purple') + labs(alpha='Normalized\nFrequency\nof Error Rate', fill='Normalized\nFrequency\nof Accuracy Rate') + ggtitle('Confusion Matrix of Random Forest Classifier (Validation Set)')
+
+```
+
+
+We have also provided a plot of the confusion matrix which confirms that the model has fit the data rather well and achieved an overall ```r round((1-RF_cm$overall[1])*100,2)```% error rate on the validation set. The confusion Matrix plot allows us to go beyond an accuracy or error measure and dissect where the errors are located. The plot displays correct values along the diagonal. The rest of the chart is shaded by error rate, with darker grey shades indicating higher error rates according to the grey scale provided; tiles along the diagonal are filled in black since they have no error by definition. As we can see, there is only a tile that has a minimal shading of grey and that corresponds to the most frequent errors; they occur when mislabelling the class 'Standing Up' (class D) as 'Standing' (class C). Overall cross validation error provided by Random Forest is quite low but maybe we can improve on it by a small margin and get to even better results and lower validation errors.
+
+
+
+
+###5. Support Vector Machines (SVM) fit
+
+SVM is another good technique to make accurate predictions on a classification problem. The model solves an optimisation problem and returns the best fit hyper plane that separates the data in the 5 different categories of our sample. The main difference with the previous model is that rather than splitting predictors at random and fitting different trees, SVM finds the hyperspace that separates the data in the best way according to a cost function. SVM also provides a choice of techniques to translate the data from feature space to optimisation space and we are leveraging the power of kernel methods to achieve this. In particular, we are using radial basis functions which build from the strength of Gaussian as interpolators and can be tuned according to the dimensionality of the data. Here the idea is to provide a separation that is both adequate to partition the data by controlling the width of the Gaussian in the radial basis function (sigma parameter in our grid search) and sufficient to preserve a pre-specified margin (the C variable in our grid search and is analogous to a regularisation parameter in regression analysis) . This way we have a solution that is optimal in two ways, it classifies the data in the most accurate way and also generalises to out of sample data. The trade-off between goodness of in-sample fit and generalisation is provided by the size of the margin; a high margin will allow for a more flexible solution, at the cost of perhaps not fitting the in-sample data perfectly. This means that the hyper plane of the solution will probably be of a lower dimension with benefits for both out-of-sample fit and computational complexity. Running a grid search on C and sigma provides the best compromise between goodness of in-sample fit and generalisation properties. To make the comparison on the error terms as likely as possible to the previous model run, we have provided the same seed to the random number generation in the train function.
+
+```{r SVM_fit, warning=FALSE}
+
+### finding optimal value of a tuning parameter
+sigDist <- sigest(classe ~ ., data = traindata, frac = 1)
+
+# creating a grid of two tuning parameters, .sigma comes from the earlier line. we are trying to find best value of .C
+SVMGrid <- data.frame(.sigma = sigDist, .C = 4^(6:8))
+
+# Cross Validation parameters
+fit_Cont <- trainControl(method = 'cv', number = 10)
+
+#Run grid-search cross validation for SVM
+set.seed(10201)
+SVM_fit <- train(as.factor(classe) ~ ., method = 'svmRadial',
+                 data = traindata, tuneGrid = SVMGrid,
+                 trControl = fit_Cont)
+
+#Print parameters of best-fit model and get number of SV
+SVM_fit$finalModel
+
+#Make predictions on validation set
+predict_SVM <- predict(SVM_fit$finalModel, valdata[,-dim(valdata)[2]])
+
+```
+The best fit solution identified ```r SVM_fit$finalModel@nSV``` vectors supporting the hyper plane that provides the linear separation in features space. This can be thought as the dimension of the space it solved the constrained optimisation problem in and gives an idea of the complexity of the best fit model.
+
+
+```{r SVM_Param_Tuning, dev='png', fig.ext='png', fig.keep='all', warning=FALSE}
+#Make Tuning Parameter plot
+plot(SVM_fit,main=('SVM Cross-Validation Tuning Parameter Plot'))
+
+```
+
+The plot here shows that the best value for the regularisation parameter is ```r format(SVM_fit$finalModel@param$C, scientific=FALSE)``` meaning that the size of the regularising parameter should be kept quite large in order to counter the high model complexity.
+
+
+```{r SVM_Conf_Mat, dev='png', fig.ext='png', fig.keep='all', warning=FALSE}
+
+#Make Confusion Matrix plot
+SVM_cm <- confusionMatrix(predict_SVM, valdata$classe)
+plt + geom_tile(aes(x=Reference, y=Prediction, alpha=Freq)) + scale_x_discrete(name='Actual Class') + scale_y_discrete(name='Predicted Class') + geom_text(aes(x=Reference, y=Prediction, label=sprintf("%.1d", Freq)),data= as.data.frame(SVM_cm$table), size=3, col='purple') + labs(alpha='Normalized\nFrequency\nof Error Rate') + ggtitle('Confusion Matrix of SVM Classifier (Validation Set)')
+
+```
+
+Looking at summary statistics, SVM has achieved a marginally higher error of ```r round((1-SVM_cm$overall[1])*100,2)```% on the validation set. Once again, inspecting the confusion matrix provides a rather interesting inisght as to why SVM could be a better classifier. Like for the previous case, the majority of errors are between class C and D but they occur at a slightly lower rate 18 versus 21 for Random Forest. This is quite an interesting result since those two tasks are quite easy to confuse given the data readings and we felt SVM has provided some extra insight that we could use in our prediction.
+
+
+###5. Final Prediction
+
+In both cases, the error on the validation set is lower than 1% and we can say that we have to models that generalise quite well and should achieve perfect accuracy on the test set. This is because we are asked to evaluate 20 samples and the error allows for fewer than 10 wrong predictions per 1,000 data samples which is a very generous allowance compared to the size of the test set. Both models are equivalent in terms of predictive power and should yield exactly the same prediction labels, which is again something we expected since they both achieved virtually perfect scores. Given the high degree of similarity between the two models, we didn't build an ensemble to make the final prediction but instead went ahead and made the final prediction using SVM.
+
+```{r final_prediction}
+
+final_pred <- predict(SVM_fit$finalModel, cleansubmit[,-dim(cleansubmit)[2]])
+
+```
+
+
+### 6. Results Comparison
+
+
+Submitting the scores to the grading system confirmed our expectation of a perfect score and gave our precition 20/20.

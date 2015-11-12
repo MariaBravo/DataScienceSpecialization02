@@ -1,0 +1,4 @@
+https://veronamontone.shinyapps.io/Project/
+https://monoptero.shinyapps.io/shiny_devdataprod-002/
+http://shiny.rstudio.com/gallery/telephones-by-region.html
+http://188.226.250.242:3838/elections2014/

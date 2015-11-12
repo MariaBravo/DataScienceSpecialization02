@@ -1,0 +1,70 @@
+Practical Machine Learning Course
+Coursera
+Project: Weight Lifting Exercise Dataset
+Name: Phung Huynh Xuan
+email: phunghx@gmail.com
+========================================================
+Firstly, loading data
+```{r}
+setwd('D:/Coursera/EDA')
+training <- read.csv("pml-training.csv")
+testing <- read.csv("pml-testing.csv")
+```
+Secondly, Explore the features in the training data
+```{r}
+names(training)
+```
+Thirdly, By heuristic, I omited some the features that are marked redundant terms: X, time, user_name. I also looked at the data values quickly and found that:
+  1. new_window is boolean variable so mabe it does not affect the classification
+  2. A lot of fields have NA value or miss-value so I should choose some the meaningful variables for classification
+  
+Next, I removed the colums that have NA or miss-value
+```{r}
+index <- c()
+n <- dim(training)[2]
+for( i in 1:n){
+  if(is.numeric(training[,i]) & is.numeric(testing[,i]) ){
+    index <- c(index, i)
+  }
+}
+index <- c(index, 160)
+realTraing <- training[,index]
+
+```
+After that, I made some graphes the make me a overview from the data. The first variable that I chose is num_window
+```{r}
+library(caret)
+par(mfcol=c(5,1))
+
+ggplot(aes(num_window), data= training) +
+  geom_histogram(aes(colour=classe, fill=classe), binwidth=1) +
+  facet_wrap(~classe, ncol=1)
+```
+
+Then, Based on this graph, the evidence that is the distinct bin's values for each class is meaningfully. Thus, I try to test just attribute with a sepecific machine learning algorith. Based on my experince, I notice that the distribute the num_window value in a class does not continue so I chose the random forest algorithm.
+Next step, make a validation set and testing set
+```{r}
+inTrain <- createDataPartition(y=training$classe,p=0.7, list=FALSE)
+Rtraining <- training[inTrain,-1]
+Rtesting <- training[-inTrain,-1]
+
+```
+Nextly, I run the random forest on Rtraing data
+```{r}
+if (file.exists("modFit2_rf_numwindow.RData")) {
+    load("modFit2_rf_numwindow.RData")
+} else {
+  modFit2 <- train(classe ~ num_window, method="rf", data= Rtraining, prox=TRUE)
+  save(modFit2, file = "modFit2_rf_numwindow.RData")
+}
+```
+Waiting some minutes for completing, I found the result that is very best fit
+```{r}
+modFit2
+confusionMatrix(Rtesting$classe, predict(modFit2, Rtesting))
+```
+Finally,I used this model for predicting on the testing data
+```{r}
+predict(modFit2, testing)
+```
+

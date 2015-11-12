@@ -1,0 +1,81 @@
+#speed up processor time
+library(doParallel)
+rCluster <- makePSOCKcluster(6) # Use 6 cores
+registerDoParallel(rCluster)
+library(caret)
+
+
+pml_write_files = function(x){
+    n = length(x)
+    for(i in 1:n){
+        filename = paste0("problem_id_",i,".txt")
+        write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    }
+}
+
+f <- tempfile()
+urldata<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+download.file(urldata,f)
+trainingData<-read.csv(f)
+urldata<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(urldata,f)
+testData<-read.csv(f)
+
+
+
+
+
+
+# predicting
+#testing.pca <- predict(preproc, testing) # make a reduced testing set
+#predictions <- predict(modelFit, testing.pca)
+#complete.cases(trainingSet)
+classe<-trainingData$classe
+trainingSet<-trainingData[sapply(trainingData, function(trainingData) !any(is.na(trainingData)))]
+trainingSet<-trainingSet[sapply(trainingSet, function(trainingSet) !any(is.factor(trainingSet)))]
+
+testClasse<-rep("NA",nrow(testData))
+testSet<-testData[names(trainingSet)]
+
+
+trainingSet<-cbind(classe,trainingSet)
+testSet<-cbind(testClasse,testSet)
+names(testSet)[1]<-"classe"
+
+
+trainingSet$toS<-"training"
+testSet$toS<-"test"
+set<-rbind(trainingSet,testSet)
+
+
+
+# training
+preproc <- preProcess(set[c(-1,-58)], method='pca', thresh=0.95)
+set.pca <- predict(preproc, set[c(-1,-58)]) # make a reduced training set (exclude column 1)
+
+set.pca$toS<-set$toS
+
+
+train.pca<-set.pca[set$toS=="training",]
+test.pca<-set.pca[set$toS=="test",]
+
+train.pca<-train.pca[-length(train.pca)]
+test.pca<-test.pca[-length(test.pca)]
+train.pca$classe<-classe
+
+set.seed(23541)
+trainIndex <- createDataPartition(y = train.pca$classe, p=0.6,list=FALSE)
+trainReduced <- train.pca[trainIndex,]
+crossValidation<-train.pca[-trainIndex,]
+modelFit <- train(classe ~ ., data=trainReduced, method='rf')
+
+
+modelFit
+crossPrediction<-predict(modelFit,crossValidation)
+confusionMatrix(crossPrediction,crossValidation$classe)
+
+testPrediction<-predict(modelFit,test.pca)
+answers <-testPrediction
+setwd("D:/R/DSCoursera/Practical Machine Learning/Project")
+pml_write_files(answers)
+answers
